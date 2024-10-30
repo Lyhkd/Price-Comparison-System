@@ -1,6 +1,18 @@
 <template>
   <!-- 头部 -->
-   <el-menu
+   <header class="header">
+    <n-button>naive-ui</n-button>
+    <n-split :default-size="0.8">
+    <template #1>
+      <n-menu
+        v-model:value="activeKey"
+        mode="horizontal"
+        :options="menuOptions"
+        responsive
+      />
+    </template>
+  </n-split>
+    <!-- <el-menu
     :default-active="activeIndex2"
     class="el-menu-demo"
     mode="horizontal"
@@ -8,6 +20,7 @@
     text-color="#fff"
     active-text-color="#ffd04b"
     @select="handleSelect"
+    :ellipsis="false"
   >
     <el-menu-item index="1">Processing Center</el-menu-item>
     <el-sub-menu index="2">
@@ -24,59 +37,133 @@
     </el-sub-menu>
     <el-menu-item index="3" disabled>Info</el-menu-item>
     <el-menu-item index="4">Orders</el-menu-item>
-  </el-menu>
-  <header class="header">
-    <!--头部第一行 登录注册-->
-    <div class="top">
-      <div class="container">
-        <div class="loginList">
-          <p>尚品汇欢迎您！{{ userName }}</p>
-          <p v-if="isLogin">
-            <a href="#" @click.prevent="clickLogout">退出登录</a>
-          </p>
-          <p v-if="!isLogin">
-            <span>请</span>
-            
-            <router-link class="register" to="/login">登录</router-link >
-            <router-link class="register" to="/register">免费注册</router-link >
-          </p>
-        </div>
-        <div class="typeList">
-          <p v-if="!isLogin">
-            <el-button-group>
-            <el-button type="primary" color="#0a7029" round>Sign Up</el-button>
-            <el-button color="#0a7029" plain round>Sign In</el-button>
-          </el-button-group>
-          </p>
-          
-          <router-link to="/my-order">我的订单</router-link>
-          <router-link to="/cart">我的购物车</router-link>
-        </div>
-      </div>
+    <div class="search-area">
+      <el-row>
+        <el-col :span="21">
+          <el-input 
+          v-model="keyword" 
+          placeholder="Search" 
+          style="width: 300px;"></el-input>
+        </el-col>
+        <el-col :span="3">
+        <el-button class="search-botton" :icon="Search" @click="goSearch"></el-button>
+      </el-col>
+      </el-row>
+      
     </div>
-    <!--头部第二行 搜索区域-->
-    <div class="bottom">
-      <h1 class="logoArea">
-        <router-link to="/home" class="logo" title="尚品汇">
-          <img src="/images/logo.png" alt="" />
-        </router-link>
-      </h1>
-      <div class="searchArea">
-        <form action="###" class="searchForm">
-          <input type="text" id="autocomplete" class="input-error input-xxlarge" v-model="keyword" />
-          <button class="sui-btn btn-xlarge btn-danger" type="button" @click.prevent="goSearch">搜索</button>
-        </form>
-      </div>
+    <div class="login-button">
+      <el-button type="primary" color="#ffd04b" round @click="goToSignUp">Sign Up</el-button>
+    <el-button link type="info" color="#545c64" @click="goToSignIn">Sign In</el-button>
     </div>
-  </header>
+  </el-menu> -->
+   </header>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router';
-
 import useLoginStore from '@/store/login'
 import useSearchStore from '@/store/search'
+
+import type { Component } from 'vue'
+import { defineComponent, h, ref, watch} from 'vue'
+
+import { NIcon } from 'naive-ui'
+import type { MenuOption } from 'naive-ui'
+import {
+  BookOutline as BookIcon,
+  PersonOutline as PersonIcon,
+  WineOutline as WineIcon
+} from '@vicons/ionicons5'
+
+function renderIcon(icon: Component) {
+  return () => h(NIcon, null, { default: () => h(icon) })
+}
+
+const menuOptions: MenuOption[] = [
+  {
+    label: () =>
+      h(
+        'a',
+        {
+          href: 'https://baike.baidu.com/item/%E4%B8%94%E5%90%AC%E9%A3%8E%E5%90%9F',
+          target: '_blank',
+          rel: 'noopenner noreferrer'
+        },
+        '且听风吟'
+      ),
+    key: 'hear-the-wind-sing',
+    icon: renderIcon(BookIcon)
+  },
+  {
+    label: '1973年的弹珠玩具',
+    key: 'pinball-1973',
+    icon: renderIcon(BookIcon),
+    disabled: true,
+    children: [
+      {
+        label: '鼠',
+        key: 'rat'
+      }
+    ]
+  },
+  {
+    label: '寻羊冒险记',
+    key: 'a-wild-sheep-chase',
+    icon: renderIcon(BookIcon),
+    disabled: true
+  },
+  {
+    label: '舞，舞，舞',
+    key: 'dance-dance-dance',
+    icon: renderIcon(BookIcon),
+    children: [
+      {
+        type: 'group',
+        label: '人物',
+        key: 'people',
+        children: [
+          {
+            label: '叙事者',
+            key: 'narrator',
+            icon: renderIcon(PersonIcon)
+          },
+          {
+            label: '羊男',
+            key: 'sheep-man',
+            icon: renderIcon(PersonIcon)
+          }
+        ]
+      },
+      {
+        label: '饮品',
+        key: 'beverage',
+        icon: renderIcon(WineIcon),
+        children: [
+          {
+            label: '威士忌',
+            key: 'whisky'
+          }
+        ]
+      },
+      {
+        label: '食物',
+        key: 'food',
+        children: [
+          {
+            label: '三明治',
+            key: 'sandwich'
+          }
+        ]
+      },
+      {
+        label: '过去增多，未来减少',
+        key: 'the-past-increases-the-future-recedes'
+      }
+    ]
+  }
+]
+
+const activeKey = ref('hear-the-wind-sing')
 
 const activeIndex2 = ref('1')
 const handleSelect = (key: string, keyPath: string[]) => {
@@ -106,117 +193,42 @@ watch(loginStore, () => {
 
 const goSearch = () => {
   searchStore.updateParam({ keyword: keyword.value })
-
   router.push({name: 'search'})
 }
 
 const clickLogout = () => {
-
   loginStore.logout()
 }
+
+const goToSignUp = () => {
+  router.push({ name: 'login' });
+};
+
+const goToSignIn = () => {
+  router.push({ name: 'login' });
+};
 
 </script>
 
 <style lang="less" scoped>
-.header {
-  font-family: Arial, sans-serif; /* 设置字体系列 */
-  font-size: 14px; /* 设置字体大小 */
-  font-weight: normal; /* 设置字体粗细 */
-  font-style: normal; /* 设置字体样式 */
-  line-height: 1.5; /* 设置行高 */
-  color: #333; /* 设置字体颜色 */
-  & > .top {
-    background-color: #ffffffff;
-    height: 50px;
-    line-height: 50px;
-    border: none;
-    border-bottom: 1.5px solid #e6e6e6d3;
-    .container {
-      width: 1200px;
-      margin: 0 auto;
-      overflow: hidden;
 
-      .loginList {
-        float: left;
-
-        p {
-          float: left;
-          margin-left: 10px;
-
-          .register {
-            border-left: 1px solid #b3aeae;
-            padding: 0 5px;
-            margin-left: 5px;
-          }
-        }
-      }
-    }
-    
-    .typeList {
-      float: right;
-
-      a {
-        padding: 0 10px;
-
-        & + a {
-          border-left: 1px solid #b3aeae;
-        }
-      }
-    }
+.header{
+  .login-button {
+  float: left;
+  white-space: nowrap;
+  margin-left: auto;  
+  margin-right: 20px;
+  margin-top: 13px;
+}
+  .search-area{
+    white-space: nowrap;
+    float: left;
+    margin-left: 20px;
+    margin-right: 20px;;
+    margin-top: 13px;
   }
-
-  & > .bottom {
-    width: 1200px;
-    margin: 0 auto;
-    overflow: hidden;
-    
-    .logoArea {
-      float: left;
-
-      img {
-        width: 175px;
-        margin: 25px 45px;
-      }
-    }
-
-    .searchArea {
-      float: right;
-      margin-top: 35px;
-
-      .searchForm {
-        overflow: hidden;
-
-        input {
-          box-sizing: border-box;
-          width: 490px;
-          height: 32px;
-          padding: 0px 4px;
-          border: 2px solid #ea4a36;
-          float: left;
-
-          &:focus {
-            outline: none;
-          }
-        }
-
-        button {
-          height: 32px;
-          width: 68px;
-          background-color: #ea4a36;
-          border: none;
-          color: #fff;
-          float: left;
-          cursor: pointer;
-
-          &:focus {
-            outline: none;
-          }
-        }
-
-      }
-
-    }
-
+  .search-button{
+    float: left;
   }
 
 }

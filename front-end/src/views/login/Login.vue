@@ -1,54 +1,60 @@
 <template>
-  <div class="login-wrap">
-    <div class="login">
-      <div class="loginform">
-        <ul class="tab clearFix">
-          <li>
-            <a href="##" style="border-right: 0;">扫描登录</a>
-          </li>
-          <li>
-            <a href="##" class="current">账户登录</a>
-          </li>
-        </ul>
 
-        <div class="content">
-          <form action="##">
-            
-            <div class="input-text clearFix">
-              <i></i>
-              <input type="text" v-model="phone" placeholder="手机号">
-              <span class="error-msg">{{ phoneMsg }}</span>
+  <body>
+  <div class="container">
+        <form>
+            <button class="btn btn-ghost">
+                <img src="./assets/images/google.png" alt="">
+                 Log in with Google
+            </button>
+
+            <small>or</small>
+
+            <div class="form-control">
+                <label for="email">Email</label>
+				<input type="text" v-model="phone" placeholder="手机号">
+            </div>
+			
+            <div class="form-control">
+                <label for="password">Password</label>
+				<input type="password" id="password" v-model="password" placeholder="请输入密码">
+            </div>
+            <div class="checkbox-container">
+				
+                <input type="checkbox" id="remember" v-model="checked" style="margin-right: 2px;">
+
+                <label for="remember">Remember me</label>
+
+                <a href="#">Forgot Password</a>
             </div>
 
-            <div class="input-text clearFix">
-              <i class="pwd"></i>
-              <input type="password" v-model="password" placeholder="请输入密码">
-              <span class="error-msg">{{ passwordMsg }}</span>
-            </div>
+            <button class="btn" @click.prevent="clickLogin">Log In</button>
 
-            <div class="setting clearFix">
-              <label class="checkbox inline">
-                <input name="m1" type="checkbox" value="2" checked="true">
-                自动登录 (使用13700000000 111111 功能体验完整)
-              </label>
-              <span class="forget">忘记密码？</span>
-            </div>
-            <button class="btn" @click.prevent="clickLogin">登&nbsp;&nbsp;录</button>
+            <small>Don't have an account? <a href="#">Sign up</a></small>
+        </form>
 
-          </form>
-          <div class="call clearFix">
-            <ul>
-              <li><img src="@/assets/images/qq.png" alt=""></li>
-              <li><img src="@/assets/images/sina.png" alt=""></li>
-              <li><img src="@/assets/images/ali.png" alt=""></li>
-              <li><img src="@/assets/images/weixin.png" alt=""></li>
-            </ul>
-            <router-link class="register" to="/register">立即注册</router-link>
-          </div>
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-code"></i>
+                <h3>Development</h3>
+                <p>A modern and clean design system for developing fast and powerful
+                    web interfaces.</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-gift"></i>
+                <h3>Features</h3>
+                <p>A modern and clean design system for developing fast and powerful
+                    web interfaces.</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-edit"></i>
+                <h3>Updates</h3>
+                <p>A modern and clean design system for developing fast and powerful
+                    web interfaces.</p>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
+</body>
 </template>
 
 <script lang="ts" setup>
@@ -59,6 +65,8 @@ import useLoginStore from '@/store/login'
 
 const phone = ref('')
 const phoneMsg = ref('请输入正确的11位手机号码')
+
+const checked = ref(false)
 
 const password = ref('')
 const passwordMsg = ref('请输入大于6位的密码')
@@ -93,145 +101,152 @@ const clickLogin = async () => {
 </script>
 
 <style lang="less" scoped>
-.login-wrap{
-	height: 487px;
-	background-color: #e93854;
-	.login{
-		width: 1200px;
-		height: 487px;
-		margin: 0 auto;
-		background: url(/images/loginbg.png) no-repeat;
-	}
-	.loginform{
-		width: 420px;
-		height: 406px;
-		box-sizing: border-box;
-		background: #fff;
-		float: right;
-		top: 45px;
-		position: relative;
-		padding: 20px;
-		.tab{
-			
-			li{
-				width:50% ;
-				float:left;
-				text-align: center;
-				a{
-					width:100%;
-					display: block;
-					height:50px;
-					line-height: 50px;
-					font-size: 20px;
-					font-weight: 700;
-					color:#333;
-					border: 1px solid #ddd;
-					box-sizing: border-box;
-					text-decoration: none;
-					
-				}
-				.current{
-					border-bottom:none;
-					border-top-color: #28a3ef;
-					color:#e1251b;
-				}
-			}
-		}
-		.content{
-			width: 380px;
-			height: 316px;
-			box-sizing: border-box;
-			border: 1px solid #ddd;
-			border-top: none;
-			padding:18px;
-			form{
-				margin:15px 0  18px 0;
-				font-size: 12px;
-				line-height: 18px;
-				.input-text{
-					margin-bottom: 22px;
-					position: relative;
-					i {
-						float:left;
-						width: 37px;
-						height: 32px;
-						border:1px solid #ccc;
-						background: url(/images/icons.png) no-repeat -10px -201px;
-						box-sizing: border-box;
-						border-radius: 2px 0 0 2px;
-					}
-					.pwd{
-						background-position: -72px -201px;
-					}
-					input{
-						width:302px;
-						height: 32px;
-						box-sizing: border-box;
-						border:1px solid #ccc;
-						border-left:none;
-						float:left;
-						padding-top: 6px;
-						padding-bottom: 6px;
-						font-size: 14px;
-						line-height: 22px;
-						padding-right: 8px;
-						padding-left: 8px;
-						
-						border-radius: 0 2px 2px 0;
-						outline: none ;
-					}
 
-					.error-msg {
-						position: absolute;
-						top: 100%;
-						left: 40px;
-						color: red;
-					}
-				}
-				.setting{
-					label{
-						float:left;
-					}
-					.forget{
-						float:right;
-					}
-				}
-				.btn{
-					background-color: #e1251b;
-					padding: 6px;
-					border-radius: 0;
-					font-size: 16px;
-					font-family: 微软雅黑;
-					word-spacing: 4px;
-					border: 1px solid #e1251b;
-					color:#fff;
-					width: 100%;
-					height: 36px;
-					margin-top: 25px;
-					outline: none;
-				}
-			}
-			.call{
-				margin-top: 30px;
-				ul{
-					float:left;
-					li{
-						float:left;
-						margin-right: 5px;
-					}
-				}
-				.register{
-					float:right;
-					font-size: 15px;
-					line-height: 38px;
-				}
-				.register:hover{
-					color: #4cb9fc;
-					text-decoration: underline;
-				}
-			}
-			
-		}
-	}
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+	width: 100%;
+	overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f7f8fc;
+    color: #141c2c;
+    font-family: 'Open Sans', sans-serif;
+    margin: 0;
+}
+
+a {
+    color: #2762eb;
+    text-decoration: none;
+}
+
+.container {
+	margin-top: 60px;
+    background-color: #fff;
+    border-radius: 3px;
+    border: 20px solid #dce7ff;
+    width: 1000px;
+    box-shadow: 0 4px 5px rgba(0,0,0,0.1);
+    display: flex;
+}
+
+form {
+    border-right: 1px solid #ecf2ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    flex: 1;
+}
+
+.form-control {
+    margin: 10px 0;
+    width: 100%;
+}
+
+label {
+    display: inline-block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+input:not([type="checkbox"]) {
+    background-color: transparent;
+    border: 2px solid #ecf2ff;
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px;
+    width: 100%;
+}
+
+.checkbox-container {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.checkbox-container a {
+    margin-left: auto;
+}
+
+.checkbox-container label {
+    color: #7a7e8c;
+    font-weight: normal;
+}
+
+.btn {
+    cursor: pointer;
+    background-color: #141c2c;
+    border: 2px solid #141c2c;
+    border-radius: 3px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 10px;
+    margin: 20px 0;
+    width: 100%;
+}
+
+.btn-ghost {
+    background-color: transparent;
+    border-color: #ecf2ff;
+    color: #141c2c;
+}
+
+.btn img {
+    margin-right: 5px;
+    width: 20px;
+}
+
+.features {
+    flex: 1.5;
+    padding: 40px;
+}
+
+.feature {
+    position: relative;
+    padding-left: 30px;
+    margin: 40px 0;
+}
+
+.feature i {
+    color: #2762eb;
+    position: absolute;
+    top: 5px;
+    left: 0;
+}
+
+.feature h3 {
+    margin: 0;
+}
+
+.feature p {
+    font-size: 14px;
+    line-height: 1.8;
+    margin: 5px 0;
+}
+
+@media(max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    form {
+        border-right: 0;
+    }
 }
 </style>

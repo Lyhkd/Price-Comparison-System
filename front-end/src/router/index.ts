@@ -14,6 +14,12 @@ export const routes = [
     meta: { showFooter: true },
   },
   {
+    name: 'header',
+    path: '/header',
+    component: () => import('@/layout/index.vue'),
+    meta: { showFooter: true },
+  },
+  {
     name: 'search',
     //打个问号代表可以不传params
     path: '/search',
