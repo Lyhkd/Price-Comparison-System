@@ -14,10 +14,16 @@ export const routes = [
     meta: { showFooter: true },
   },
   {
-    name: 'header',
-    path: '/header',
-    component: () => import('@/layout/index.vue'),
+    name: 'user',
+    path: '/user',
+    component: () => import('@/views/user/index.vue'),
     meta: { showFooter: true },
+  },
+  {
+    name: 'auth',
+    path: '/auth',
+    component: () => import('@/views/register/index.vue'),
+    meta: { showFooter: false },
   },
   {
     name: 'search',
@@ -56,13 +62,13 @@ export const routes = [
   {
     name: 'login',
     path: '/login',
-    component: () => import('@/views/login/Login.vue'),
+    component: () => import('@/views/login/index.vue'),
     meta: { showFooter: false },
   },
   {
     name: 'register',
     path: '/register',
-    component: () => import('@/views/register/Register.vue'),
+    component: () => import('@/views/register/index.vue'),
     meta: { showFooter: false },
   },
   {

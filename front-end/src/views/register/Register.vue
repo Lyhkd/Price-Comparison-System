@@ -1,4 +1,5 @@
 <template>
+	
   <div class="register">
     <h3>注册新用户
       <span class="go">我有账号，去 <router-link to="/login" >登陆</router-link>

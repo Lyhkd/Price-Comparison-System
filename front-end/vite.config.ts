@@ -45,13 +45,13 @@ export default defineConfig({
       resolvers: [NaiveUiResolver()]
     }),
     viteMockServe({
-      mockPath: './src/mock'
-    })
+      mockPath: './src/mock',
+    }),
   ],
   server:{
     
     proxy:{
-      '/api': 'http://82.156.11.187'
+      '/api': 'http://localhost:3000'
     }
   }
 

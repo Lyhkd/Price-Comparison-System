@@ -1,11 +1,8 @@
 export interface LoginInfo {
-  id: number,
-  loginName: string,
-  nickName: string,
-  passwd: string,
-  name: string,
-  phoneNum: string,
+  uid: string,
+  username: string,
+  password: string,
   email: string,
-  headImg: string,
-  userLevel: string
+  avatar: string,
+  isLogin: boolean,
 }

@@ -1,4 +1,7 @@
-import request from './request'
+import request, {http} from './request'
+import { ApiResponse } from '@/types'
+import { LoginData, LoginResponse, RegisterInfo} from '@/types/user'
+import { LoginInfo } from '@/types/login'
 
 export const reqCategoryList = () => request({ url: '/product/getBaseCategoryList', method: 'get' })
 
@@ -16,11 +19,16 @@ export const deleteCartData = (skuId: number) => request({ url: `/cart/deleteCar
 export const updateCartChecked = (skuId: number, checked: 0 | 1) => request({ url: `/cart/checkCart/${ skuId }/${ checked }`, method: 'get' })
 
 //login
-export const reqRegValCode = (phone: string) => request({ url: `/user/passport/sendCode/${ phone }`, method: 'get' })
-export const postRegUser = (params: { phone: string, code: string, password: string }) => request({ url: `/user/passport/register`, method: 'post', data: params })
-export const postUserLogin = (params: { phone: string, password: string }) => request({ url: `/user/passport/login`, method: 'post', data: params })
-export const getUserLoginInfo = () => request({ url: `/user/passport/auth/getUserInfo`, method: 'get' })
-export const logoutUserInfo = () => request({ url: `/user/passport/logout`, method: 'get' })
+export const reqRegValCode = (email: string) => http.get(`/user/code/${ email }`)
+// ({ url: `/user/sendCode/${ email }`, method: 'get' })
+export const postUserSignup = (params: RegisterInfo) => http.post('/user/signup', params)
+// ({ url: `/user/signup`, method: 'post', data: params })
+export const postUserLogin = (params: LoginData) => http.post<LoginResponse>('/user/login', params)
+//request({ url: `/user/login`, method: 'post', data: params })
+export const getUserLoginInfo = () => http.get<LoginInfo>('/user/auth/loginInfo')
+//request({ url: `/user/auth/getUserInfo`, method: 'get' })
+export const logoutUserInfo = () => http.get('/user/logout')
+//request({ url: `/user/logout`, method: 'get' })
 
 //pay
 import { Order } from '@/types/pay'

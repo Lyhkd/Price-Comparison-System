@@ -1,99 +1,292 @@
 <template>
-    <n-layout >
-      <n-layout-header>颐和园路</n-layout-header>
-      <n-layout has-sider>
-        <n-layout-sider content-style="padding: 24px;">
-            <img src="../../assets/logo.png" alt="logo" />
-        </n-layout-sider>
-        <n-layout-sider content-style="padding: 24px;">
+  <!-- Header布局，固定高度 -->
+  <n-layout :native-scrollbar="false" has-sider class="layout-header">
+    <!-- <n-button @click="console.log(loginStore.isLogin)">测试</n-button> -->
+    <!-- 左侧Logo -->
+    <n-layout-sider width="60px">
+      <div class="logo" @click="$router.push({ name: 'home' })">
+        <img src="../../../assets/images/logo.png" alt="logo" class="logo-image" />
+      </div>
+    </n-layout-sider>
 
-            <div class="options">
-                <n-menu 
-                :options="menuOptions"
-                mode="horizontal"/>
-            </div>
-        
-        </n-layout-sider>
-        <n-layout-sider content-style="top: 30px;">
-            <n-button>naive-ui</n-button>
-        </n-layout-sider>
-        <n-layout-content content-style="padding: 24px;">
-          平山道
-        </n-layout-content>
-      </n-layout>
-      <n-layout-footer bordered></n-layout-footer>
-    </n-layout>
-  
+    <!-- 中间的导航菜单 -->
+    <n-layout-header
+      content-style="display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
+      <div class="menu-box">
+        <!-- 菜单 -->
+        <n-menu :options="menuOptions" mode="horizontal" :default-value="'home'" v-model:value="currentRoute" />
+        <!-- 搜索框 -->
+        <div class="search-box" v-if="!isSearchHidden">
+          <n-input round clearable placeholder="搜索商品..." v-model="searchQuery" @input="onInputChange"
+            style="width: 200px;" />
+          <div style="width: 5px;"></div>
+          <n-button round type="primary" @click="onSearch">
+            <template #icon>
+              <n-icon>
+                <SearchIcon />
+              </n-icon>
+            </template>
+          </n-button>
+        </div>
+      </div>
+    </n-layout-header>
+
+
+    <!-- 右侧用户头像和设置 -->
+    <n-layout-sider width="150">
+      <!-- 登陆显示头像 -->
+      <div v-if="loginStore.isLogin" style="height: 60px">
+        <n-dropdown trigger="hover" @select="avatarSelect" :options="avatarOptions">
+          <div class="avatar-box">
+            <n-avatar size="medium" round bordered :src="loginStore.loginInfo.avatar">
+            </n-avatar>
+            <n-divider vertical />
+            <span>{{ loginStore.loginInfo.username }}</span>
+          </div>
+
+        </n-dropdown>
+      </div>
+      <!-- 未登录显示注册和登录按钮 -->
+      <div class="avatar-box" v-if="!loginStore.isLogin">
+        <n-space align="center">
+          <n-button text @click="goToAuth('login')">登录</n-button>
+          <n-divider vertical />
+          <n-button text @click="goToAuth('signup')">注册</n-button>
+        </n-space>
+      </div>
+    </n-layout-sider>
+  </n-layout>
 </template>
 
 <script lang="ts">
-import type { Component } from 'vue'
-import { defineComponent, h } from 'vue'
-import { NIcon } from 'naive-ui'
-import type { MenuOption } from 'naive-ui'
-import { RouterLink } from 'vue-router'
+import { defineComponent, h, ref, watch, onMounted, onBeforeUnmount } from "vue";
+import { NIcon } from "naive-ui";
+import type { MenuOption } from "naive-ui";
+import { RouterLink, useRouter, useRoute } from "vue-router";
+import { useUserStore } from '@/store/user';
+import useLoginStore from "@/store/login";
 import {
-  LogOutOutline as HomeIcon,
-  LaptopOutline as WorkIcon
-} from '@vicons/ionicons5'
+  Home as HomeIcon,
+  LaptopOutline as WorkIcon,
+  PersonSharp as UserIcon,
+  PhonePortrait as ItemIcon,
+  Search as SearchIcon
+} from "@vicons/ionicons5";
 
-function renderIcon(icon: Component) {
-  return () => h(NIcon, null, { default: () => h(icon) })
-}
 
-const menuOptions: MenuOption[] = [
-  {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: 'home',
-            params: {
-              lang: 'zh-CN'
-            }
-          }
-        },
-        { default: () => '回家' }
-      ),
-    key: 'go-back-home',
-    icon: renderIcon(HomeIcon)
-  },
-  {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            path: '/zh-CN/os-theme/components/code'
-          }
-        },
-        { default: () => '上班' }
-      ),
-    key: 'go-to-work',
-    icon: renderIcon(WorkIcon)
-  }
-]
+
 
 export default defineComponent({
-  setup() {
-    return {
-      menuOptions
+  components: {
+    SearchIcon
+  },
+  setup(props, { emit }) {
+    const router = useRouter();
+    const route = useRoute();
+    const userStore = useUserStore();
+    const loginStore = useLoginStore();
+    // 用于渲染图标
+    function renderIcon(icon: any) {
+      return () => h(NIcon, null, { default: () => h(icon) });
     }
-  }
-})
+    watch(
+    () => loginStore.isLogin,
+    (newValue) => {
+        console.log('登录状态变化:', newValue);
+    }
+);
+
+    // 搜索处理
+
+    const searchQuery = ref('')
+    const isSearchHidden = ref<boolean>(false);
+    const onInputChange = (value: string) => {
+      searchQuery.value = value
+    }
+    function onSearch(value: string) {
+      console.log('搜索:', value)
+    }
+    const handleResize = () => {
+      isSearchHidden.value = window.innerWidth < 780;
+    };
+    onMounted(() => {
+      window.addEventListener('resize', handleResize);
+      handleResize(); // 初始化检查
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('resize', handleResize);
+    });
+
+    // 处理用户下拉菜单点击
+    const avatarOptions = [
+      {
+        label: "个人设置",
+        key: 1,
+      },
+      {
+        label: "退出登录",
+        key: 2,
+      },
+    ];
+
+    //头像部分
+    const avatarSelect = (key: any) => {
+      switch (key) {
+        case 1:
+          router.push({ name: "Setting" });
+          break;
+        case 2:
+          loginStore.logout();
+          router.push({ name: "home" });
+          break;
+      }
+    };
+
+
+    // 注册和登录按钮
+    const onClickRegister = () => {
+      router.push({ name: "register" });
+    };
+    const onClickLogin = () => {
+      router.push({ name: "login" });
+    };
+    const goToAuth = (mode: 'login' | 'signup') => {
+      if (currentRoute.value === 'auth') {
+        router.push({ path: '/auth', query: { mode } }).then(() => {
+          window.location.reload();});
+      } else {
+        router.push({ path: '/auth', query: { mode } });
+      }
+      
+    }
+
+
+    // menu部分
+    const currentRoute = ref<string | symbol>(route.name || 'home')
+    watch(
+      () => route.name,
+      (newRouteName) => {
+        currentRoute.value = newRouteName ?? 'home'
+      }
+    )
+    const menuOptions: MenuOption[] = [
+      {
+        label: () =>
+          h(RouterLink, { to: { name: "home" } }, { default: () => "首页" }),
+        key: "home",
+        icon: renderIcon(HomeIcon),
+      },
+      {
+        label: () =>
+          h(RouterLink, { to: { name: "auth" } }, { default: () => "商品" }),
+        key: "item",
+        icon: renderIcon(ItemIcon),
+      },
+      {
+        label: () =>
+          h(RouterLink, { to: { path: "/user", query: { uid: userStore.userInfo.uid } } }, { default: () => "个人" }),
+        key: "user",
+        icon: renderIcon(UserIcon),
+      },
+    ];
+
+    return {
+      menuOptions,
+      avatarOptions,
+      avatarSelect,
+      loginStore,
+      searchQuery,
+      isSearchHidden,
+      onSearch,
+      onInputChange,
+      onClickRegister,
+      onClickLogin,
+      goToAuth,
+      currentRoute,
+    };
+  },
+});
 </script>
 
 <style scoped>
-.n-layout-sider {
-  background: rgba(209, 209, 209, 0.3);
+.layout-header {
+  height: 60px;
+  box-shadow: 0 1px 4px rgba(0, 12, 24, 0.2);
+
+  .logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    line-height: 60px;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .logo-image {
+    width: 30px;
+    height: 30px;
+  }
+
+  .menu-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    line-height: 60px;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-left: 10px;
+    padding-right: 10px;
+
+    /* 菜单居中 */
+    .n-menu {
+      flex-grow: 1;
+      display: flex;
+      justify-content: left;
+    }
+  }
+
+  /* 用户头像和设置按钮 */
+  .user-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .n-layout-header {
+    background-color: rgba(241, 241, 241, 0.836);
+  }
+
+  .avatar-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    width: 150px;
+  }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+  }
 }
 
-.n-layout-content {
-  background: rgba(128, 128, 128, 0.4);
+@media (max-width: 800px) {
+  .search-box n-input {
+    width: 200px !important;
+  }
 }
 
-.options {
-    align-items: center; 
+/* 在更小的屏幕下，隐藏搜索框 */
+@media (max-width: 600px) {
+  .search-box {
+    display: none;
+  }
 }
+
+/* Logo样式 */
 </style>

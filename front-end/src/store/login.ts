@@ -4,7 +4,7 @@ import useCartStore from '@/store/cart'
 
 import {
   reqRegValCode,
-  postRegUser,
+  postUserSignup,
   getUserLoginInfo,
   postUserLogin,
   logoutUserInfo,
@@ -16,53 +16,66 @@ import {
   removeToken
 } from '@/libs/token'
 
-import { LoginInfo} from '@/types/login'
+import { LoginInfo}  from '@/types/login'
+import { ApiResponse } from '@/types'
+import { LoginData, LoginResponse } from '@/types/user'
 
 //1定义并导出容器，容器ID必须唯一
-const useLoginStore = defineStore('login', {
+const useLoginStore = defineStore('useLoginStore', {
   state : () => {
     return { 
-      loginInfo : {} as (LoginInfo | undefined), 
-
+      loginInfo : {} as (LoginInfo | undefined),
+      isLogin : false,
     }
   },
-
-  getters: { 
+  getters: {
 
   },
   
   //不能使用箭头函数定义actions,因为箭头函数绑定外部this
   actions: {
-    async getValCode(phone: string) {
-      return (await reqRegValCode(phone)).data
+    async getValCode(email: string) {
+      return (await reqRegValCode(email))
     },     
-    async register(phone: string, password: string, code: string) {
-      await postRegUser({ phone, password, code })
-      return true
-    },    
+    async register(name: string, email: string, password: string) {
+      try {
+        await postUserSignup({ name, email, password })
+        console.log('注册成功')
+      } catch (error) {
+        console.error('注册失败:', error)
+      }
+    },
     async load() {
       if(getToken()){
-        this.loginInfo = (await getUserLoginInfo()).data
-
-        const cartStore = useCartStore()
-        cartStore.loadList()
+        this.loginInfo = (await getUserLoginInfo())
+        this.isLogin = true
+        //const cartStore = useCartStore()
+        //cartStore.loadList()
       }
       
     },
-    async login(phone: string, password: string) {
-      const data : { token: string } = (await postUserLogin({ phone, password })).data
+    async login(name: string, password: string) {
+      const data : { token: string } = (await postUserLogin({ name, password }))
       if(data.token) {
         setToken(data.token)
-
         this.load()
+        console.log('登录成功', data, this.isLogin)
       }
     },    
     async logout() {
-      await logoutUserInfo()        
+      // await logoutUserInfo()        
       removeToken()
       this.loginInfo = undefined
+      this.isLogin = false
     },
 
+  },
+
+  persist: {
+    enabled: true,
+    strategies: [
+      { storage: localStorage, paths: ['isLogin', 'loginInfo'] }
+    ],
   },
 
 })

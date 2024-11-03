@@ -1,11 +1,18 @@
 <template>
-<n-config-provider :locale="zhCN" :date-locale="dateZhCN" :theme-overrides="themeOverrides">
-  <Header></Header>
+  <n-config-provider :locale="zhCN" :date-locale="dateZhCN" :theme-overrides="themeOverrides">
+    <n-message-provider>
+      <n-dialog-provider>
+        <n-notification-provider>
 
-  <router-view></router-view>
-  
-  <Footer v-show='$route.meta.showFooter'></Footer>
-  
+          <Header></Header>
+          <router-view>
+          </router-view>
+          <Message></Message>
+        </n-notification-provider>
+      </n-dialog-provider>
+    </n-message-provider>
+    <Footer v-show='$route.meta.showFooter'></Footer>
+
   </n-config-provider>
 </template>
 
@@ -13,10 +20,10 @@
 
 import { onMounted } from 'vue';
 
-import Header from '@/components/header/Header.vue'
+import Header from '@/layout/components/header/index.vue'
 import Footer from '@/components/footer/Footer.vue'
-
-import { NConfigProvider, GlobalThemeOverrides, zhCN, dateZhCN } from 'naive-ui'
+import Message from '@/components/message/index.vue'
+import { NConfigProvider, NDialogProvider, NNotificationProvider, NMessageProvider,GlobalThemeOverrides, zhCN, dateZhCN } from 'naive-ui'
 
 
 import useLoginStore from '@/store/login'
@@ -29,40 +36,35 @@ const categoryStore = useCategoryStore()
 const searchStore = useSearchStore()
 const cartStore = useCartStore()
 
-loginStore.load()
-searchStore.updatePageData()
-cartStore.loadList()
+// loginStore.load()
+//searchStore.updatePageData()
+//cartStore.loadList()
 
-onMounted (async () => {
+onMounted(async () => {
   //type store的初始数据载入
-  await categoryStore.loadList()
+  //await categoryStore.loadList()
 })
 
 
 
-  const themeOverrides: GlobalThemeOverrides = {
-    common: {
-      // primaryColor: '#FF0000',
-      // primaryColorHover: '#00306e'
-    },
-    Button: {
-      textColor: '#FF0000'
-    },
-    Select: {
-      peers: {
-        InternalSelection: {
-          textColor: '#FF0000'
-        }
+const themeOverrides: GlobalThemeOverrides = {
+  common: {
+    // primaryColor: '#FF0000',
+    // primaryColorHover: '#00306e'
+  },
+  Button: {
+    // textColor: '#FF0000'
+  },
+  Select: {
+    peers: {
+      InternalSelection: {
+        textColor: '#FF0000'
       }
     }
   }
+}
 
 
 </script>
 
-<style scoped>
-
-</style>
-
-
-
+<style scoped></style>
