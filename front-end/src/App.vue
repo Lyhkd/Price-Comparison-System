@@ -20,7 +20,7 @@
 
 import { onMounted } from 'vue';
 
-import Header from '@/layout/components/header/index.vue'
+import Header from '@/components/header/index.vue'
 import Footer from '@/components/footer/Footer.vue'
 import Message from '@/components/message/index.vue'
 import { NConfigProvider, NDialogProvider, NNotificationProvider, NMessageProvider,GlobalThemeOverrides, zhCN, dateZhCN } from 'naive-ui'

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-import { SearchPageInfo, SearchPageData, SearchPramas, Attr } from '@/types/search'
+import { SearchPageInfo, SearchPageData, SearchPramas } from '@/types/search'
 
 import { reqSearchData } from '@/api'
 
@@ -11,22 +11,16 @@ const useSearchStore = defineStore('search', {
       pageSize: 0,
       pageNo: 0,
       totalPages: 0,
-      goodsList: [],
-      trademarkList: [], 
-      attrsList: []
+      itemsList: [],
     }
 
     const searchPramas: SearchPramas = {
-      category1Id: '',
-      category2Id: '',
-      category3Id: '',
-      categoryName: '',
-      keyword: '',
+      keyword: '111',
       order: '1:desc',
       pageNo: 1,
       pageSize: 10,
       props: [],
-      trademark: ''
+      platform: ['all'],
     }
 
     return { 
@@ -36,14 +30,8 @@ const useSearchStore = defineStore('search', {
   },
 
   getters: { 
-    trademarks(state) {
-      return state.pageData.trademarkList
-    },
-    attrs(state) {
-      return state.pageData.attrsList
-    },
     goodsList(state) {
-      return state.pageData.goodsList
+      return state.pageData.itemsList
     },
     pageInfo(state): SearchPageInfo  {
       
@@ -64,7 +52,7 @@ const useSearchStore = defineStore('search', {
 
     async updatePageData() {
       this.searchPramas.pageNo = 1
-      this.pageData = (await reqSearchData(this.searchPramas)).data as SearchPageData
+      this.pageData = (await reqSearchData(this.searchPramas)) as SearchPageData
     },
 
     async updateParam(schema: {}) {
@@ -76,12 +64,7 @@ const useSearchStore = defineStore('search', {
       Reflect.set(this.searchPramas, attr.name, attr.value)
       await this.updatePageData()
     },
-
-    async updateParamProps(attr: Attr, propValue: string) {
-      let key = `${ attr.attrId }:${ propValue}:${ attr.attrName }`
-      this.searchPramas.props.filter(m => m === key).length === 0 && this.searchPramas.props.push(key)
-      await this.updatePageData()
-    },   
+  
 
     async deleteParamProps(propValue: string) {
       this.searchPramas.props.splice(this.searchPramas.props.findIndex(m => m === propValue), 1)
@@ -94,7 +77,7 @@ const useSearchStore = defineStore('search', {
 
     async updatePageNum(pageNo: number) {
       Object.assign(this.searchPramas, { pageNo })
-      this.pageData = (await reqSearchData(this.searchPramas)).data as SearchPageData
+      this.pageData = (await reqSearchData(this.searchPramas)) as SearchPageData
     },  
 
   },

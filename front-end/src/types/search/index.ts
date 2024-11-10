@@ -6,47 +6,27 @@ export interface SearchPageInfo {
 }
 
 export interface SearchPramas {
-  category1Id: string,
-  category2Id: string,
-  category3Id: string,
-  categoryName: string,
   keyword: string,
   order: string,
   pageNo: number,
   pageSize: number,
   props: string[],
-  trademark: string
+  platform: string[]
 }
 
 export interface SearchPageData extends SearchPageInfo {
-  goodsList: Goods[],
-  trademarkList: TradeMark[], 
-  attrsList: Attr[]
+  itemsList: Items[]
 }
 
-export interface TradeMark {
-  tmId: number,
-  tmName: string
-}
 
-export interface Attr {
-  attrId: number,
-  attrName: string,
-  attrValueList: string[]
-}
-
-export interface Goods extends SearchPramas {
+export interface Items {
   id: number,
-  attrs: string,
-  category1Name: string,
-  category2Name: string,
-  category3Name: string,
-  createTime: string,
   defaultImg: string,
-  hotScore: number,
-  price: number,
+  currentPrice: number,
   title: string,
-  tmId: number,
-  tmName: string
+  link: string,
+  shopName: string,
+  shopLink: string,
+  platform: string,
 }
 

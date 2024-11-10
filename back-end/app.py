@@ -1,10 +1,19 @@
 from flask import Flask
 from flask_cors import CORS
-from models import db
 from config import Config
+# from routes import api
+from models import db
 from routes import api
+from sqlalchemy import text
 
-def create_app():
+def db_init(app):
+    with app.app_context():
+        db.drop_all()
+        db.create_all()  # 数据库初始化
+        db.session.execute(text('CREATE FULLTEXT INDEX idx_title ON items(search_title);'))
+    print('Database initialized')
+
+def create_app(init=False):
     app = Flask(__name__)
     # 加载配置
     app.config.from_object(Config)
@@ -12,12 +21,7 @@ def create_app():
     # 初始化数据库
     db.init_app(app)
     # 注册蓝图
-    app.register_blueprint(api)
+    app.register_blueprint(api, url_prefix='/api')  # /api/search, /api/login
+    if init:
+        db_init(app)
     return app
-
-if __name__ == '__main__':
-    app = create_app()
-    with app.app_context():
-        db.drop_all()
-        db.create_all()  # 数据库初始化
-    # app.run(debug=True)

@@ -29,7 +29,7 @@ export const routes = [
     name: 'search',
     //打个问号代表可以不传params
     path: '/search',
-    component: () => import('@/views/search/Search.vue'),
+    component: () => import('@/views/search/index.vue'),
     meta: { showFooter: true },
 
     //把pramas传入到当前route的props属性中,布尔写法
@@ -112,7 +112,7 @@ router.beforeEach((to, from, next) => {
   switch(to.name) {
     case 'login':
 
-      if(loginStore.loginInfo?.loginName) {
+      if(loginStore.isLogin) {
         next('/home')
       } else {
         next()
@@ -121,7 +121,7 @@ router.beforeEach((to, from, next) => {
       break
     case 'register':
 
-      if(loginStore.loginInfo?.loginName) {
+      if(loginStore.isLogin) {
         next('/home')
       }else{
         next()
@@ -130,7 +130,7 @@ router.beforeEach((to, from, next) => {
       break 
     case 'cart':
 
-      if(!loginStore.loginInfo?.loginName) {
+      if(!loginStore.isLogin) {
         next('/home')
       }else{
         next()
@@ -139,7 +139,7 @@ router.beforeEach((to, from, next) => {
       break
     case 'my-order':
 
-      if(!loginStore.loginInfo?.loginName) {
+      if(!loginStore.isLogin) {
         next('/home')
       }else{
         next()
@@ -148,7 +148,7 @@ router.beforeEach((to, from, next) => {
       break
     case 'trade':
 
-      if(!loginStore.loginInfo?.loginName) {
+      if(!loginStore.isLogin) {
         next('/home')
       }else{
         next()

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Product, Price, PriceAlert, Account
+from models import db, User, Item, Price, PriceAlert, Account
 
 api = Blueprint('api', __name__)
 

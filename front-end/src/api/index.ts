@@ -2,12 +2,14 @@ import request, {http} from './request'
 import { ApiResponse } from '@/types'
 import { LoginData, LoginResponse, RegisterInfo} from '@/types/user'
 import { LoginInfo } from '@/types/login'
+import { SearchPageData } from '@/types/search'
 
 export const reqCategoryList = () => request({ url: '/product/getBaseCategoryList', method: 'get' })
 
 //search
 import { SearchPramas } from '@/types/search'
-export const reqSearchData = (params: SearchPramas) => request({ url: '/list', method: 'post', data: params })
+export const reqSearchData = (params: SearchPramas) => http.get<SearchPageData>('/search', { params })
+//({ url: '/search', method: 'get', data: params })
 
 //detail
 export const reqDetailData = (id: number) => request({ url: `/item/${ id }`, method: 'get' })
