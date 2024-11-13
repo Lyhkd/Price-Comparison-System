@@ -14,10 +14,19 @@ export interface LoginData{
     name: string;
     password: string;
 }
+export interface LoginInfo {
+    username: string,
+    uid: string,
+    email: string,
+    avatar: string,
+  }
 
 export interface LoginResponse{
     token: string;
+    loginInfo: LoginInfo;
 }
+
+
 
 export interface RegisterInfo{
     name: string;

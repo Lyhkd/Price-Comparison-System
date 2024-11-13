@@ -1,5 +1,5 @@
 <template>
-  <type-nav :sort-hidden="true" />
+  <type-nav :sort-hidden="false" />
 
   <!-- 项目的最外层 -->
   <div class="outer">

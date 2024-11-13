@@ -1,6 +1,6 @@
 import requests, json
 from bs4 import BeautifulSoup
-
+from time import sleep
 
 class Crawler(object):
     def __init__(self, cookie, use_cookie=True):
@@ -35,9 +35,11 @@ class Crawler(object):
             res = res.text
             # 定位搜索结果主体，并获取所有的商品的标签
             soup = BeautifulSoup(res, 'html.parser').select('#J_goodsList > ul')
-            with open('packet.html', 'w', encoding='utf-8') as f:
-                f.write(res)
-            good_list = soup[0].select('[class=gl-item]')
+            try:
+                good_list = soup[0].select('[class=gl-item]')
+            except:
+                print('Skip No items found')
+                continue
             # 循环获取所有商品信息
             for temp in good_list:
                 item_info = {}  # 用于存储单个商品的字典
@@ -72,7 +74,7 @@ class Crawler(object):
 
                 # 将商品信息字典加入列表
                 item_list.append(item_info)
-
+            sleep(1)
         # 返回商品字典列表
         return item_list
 

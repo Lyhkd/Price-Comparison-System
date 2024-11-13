@@ -5,17 +5,16 @@ export interface SearchPageInfo {
   totalPages: number,
 }
 
-export interface SearchPramas {
+export interface SearchParams {
   keyword: string,
   order: string,
   pageNo: number,
   pageSize: number,
-  props: string[],
   platform: string[]
 }
 
 export interface SearchPageData extends SearchPageInfo {
-  itemsList: Items[]
+  items: Items[]
 }
 
 

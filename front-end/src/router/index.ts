@@ -40,6 +40,12 @@ export const routes = [
     //props: (route)
   },
   {
+    name: 'item',
+    path: '/item/:id',
+    component: () => import('@/views/item/index.vue'),
+    meta: { showFooter: true },
+  },
+  {
     name: 'popular',
     path: '/popular',
     component: () => import('@/views/popular/Popular.vue'),

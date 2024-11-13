@@ -5,23 +5,27 @@ import { getToken } from '@/libs/token'
 
 const UUID = 'aa973966-c323-42a1-9ae1-0f0dba690fa5'
 
+axios.defaults.withCredentials = true
 
 const request = axios.create({
-  baseURL: '/api',
+  baseURL: 'http://127.0.0.1:5000',
   timeout: 5000,
 })
 
 
 //请求拦截器
 request.interceptors.request.use((config) => {
-  window.$message.info("get request")
-  config.headers && (config.headers.userTempID = 'aa973966-c323-42a1-9ae1-0f0dba690fa5')
-
-  let token = getToken()
-  if (token && config.headers) config.headers.token = token
-
-  return config
-})
+  window.$message.info("get request");
+  // Add the userTempID to headers if it exists
+  // if (config.headers) {
+  //   config.headers.userTempID = 'aa973966-c323-42a1-9ae1-0f0dba690fa5';
+  // }
+  let token = getToken();
+  if (token && config.headers) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
 
 //响应拦截器
 // request.interceptors.response.use(

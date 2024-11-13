@@ -3,7 +3,7 @@ from flask_cors import CORS
 from config import Config
 # from routes import api
 from models import db
-from routes import api
+from routes import *
 from sqlalchemy import text
 
 def db_init(app):
@@ -15,8 +15,7 @@ def db_init(app):
 
 def create_app(init=False):
     app = Flask(__name__)
-    # 加载配置
-    app.config.from_object(Config)
+    app.config.from_object(Config) # 加载配置
     CORS(app)  # 允许跨域请求
     # 初始化数据库
     db.init_app(app)
@@ -24,4 +23,6 @@ def create_app(init=False):
     app.register_blueprint(api, url_prefix='/api')  # /api/search, /api/login
     if init:
         db_init(app)
+    for rule in app.url_map.iter_rules():
+        print(rule)
     return app

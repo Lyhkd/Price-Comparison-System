@@ -1,7 +1,7 @@
 <template>
   <!-- Header布局，固定高度 -->
   <n-layout :native-scrollbar="false" has-sider class="layout-header">
-    <n-button @click="console.log(searchStore.searchPramas)">测试</n-button>
+    <n-button @click="console.log(searchStore.searchParams)">测试</n-button>
     <!-- 左侧Logo -->
     <n-layout-sider width="60px">
       <div class="logo" @click="$router.push({ name: 'home' })">
@@ -17,7 +17,7 @@
         <n-menu :options="menuOptions" mode="horizontal" :default-value="'home'" v-model:value="currentRoute" />
         <!-- 搜索框 -->
         <div class="search-box" v-if="!isSearchHidden">
-          <n-input round clearable placeholder="搜索商品..." v-model="searchStore.searchPramas.keyword" 
+          <n-input round clearable placeholder="搜索商品..." v-model:value="searchInput" @keydown.enter="onSearch" 
             style="width: 200px;" />
           <div style="width: 5px;"></div>
           <n-button round type="primary" @click="onSearch">
@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, h, ref, watch, onMounted, onBeforeUnmount } from "vue";
+import { defineComponent, h, ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
 import { NIcon } from "naive-ui";
 import type { MenuOption } from "naive-ui";
 import { RouterLink, useRouter, useRoute } from "vue-router";
@@ -79,7 +79,8 @@ import {
 
 export default defineComponent({
   components: {
-    SearchIcon
+    NIcon,
+    SearchIcon  
   },
   setup(props, { emit }) {
     const router = useRouter();
@@ -91,27 +92,35 @@ export default defineComponent({
     function renderIcon(icon: any) {
       return () => h(NIcon, null, { default: () => h(icon) });
     }
-    watch(
-    () => loginStore.isLogin,
-    (newValue) => {
-        console.log('登录状态变化:', newValue);
-    }
-);
+
 
     // 搜索处理
 
-    // const searchQuery = ref('')
+    const searchInput = ref<string>('')
     const isSearchHidden = ref<boolean>(false);
     // const onInputChange = (value: string) => {
-    //   searchQuery.value = value
+    //   searchInput.value = value
     // }
-    function onSearch(keyword: string) {
-      searchStore.updateParam({ keyword: keyword })
-      router.push({ name: 'search', query: { keyword, pageNo: 1 } }); // 重置页码为1
-      console.log('搜索:', keyword)
+    function onSearch() {
+      router.push({
+        name: 'search',
+        query: {
+          keyword: searchInput.value,
+          order: "default",
+          pageNo: 1,
+          pageSize: 30,
+          platform: "all", // 如果是数组，可以将其转成字符串
+        },
+        })
+      console.log('搜索:', searchInput.value);
     }
+
+    // 计算属性：根据窗口宽度返回是否隐藏搜索框
+    const isSearchHiddenComputed = computed(() => {
+      return window.innerWidth < 780;
+    });
     const handleResize = () => {
-      isSearchHidden.value = window.innerWidth < 780;
+      isSearchHidden.value = isSearchHiddenComputed.value;
     };
     onMounted(() => {
       window.addEventListener('resize', handleResize);
@@ -121,7 +130,6 @@ export default defineComponent({
     onBeforeUnmount(() => {
       window.removeEventListener('resize', handleResize);
     });
-
     // 处理用户下拉菜单点击
     const avatarOptions = [
       {
@@ -165,7 +173,6 @@ export default defineComponent({
       
     }
 
-
     // menu部分
     const currentRoute = ref<string | symbol>(route.name || 'home')
     watch(
@@ -201,6 +208,7 @@ export default defineComponent({
       avatarSelect,
       loginStore,
       searchStore,
+      searchInput,
       // searchQuery,
       isSearchHidden,
       onSearch,

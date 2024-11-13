@@ -52,12 +52,12 @@ import { useDebounceRef } from '@/libs/utils'
 import useCategoryStore from '@/store/category'
 import useSearchStore from '@/store/search'
 
-const props = defineProps<{
-  sortHidden: {
-    type: Boolean,
-    required: true
-  }
-}>()
+// const props = defineProps<{
+//   sortHidden: {
+//     type: Boolean,
+//     required: true
+//   }
+// }>()
 
 //type store的载入和暴露
 const categoryStore = useCategoryStore()
@@ -101,17 +101,17 @@ const showSort = ref(true)
 
 const mouseLeave = () => {
   curType0Index.value = -1
-  props.sortHidden && (showSort.value = false)
+  // props.sortHidden && (showSort.value = false)
 
 }
 
 const mouseEnter = () => {
-  props.sortHidden && (showSort.value = true)
+  // props.sortHidden && (showSort.value = true)
 }
 
 onMounted(() => {
 
-  showSort.value = !props.sortHidden
+  // showSort.value = !props.sortHidden
 
   
 })

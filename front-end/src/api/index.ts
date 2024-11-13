@@ -7,8 +7,8 @@ import { SearchPageData } from '@/types/search'
 export const reqCategoryList = () => request({ url: '/product/getBaseCategoryList', method: 'get' })
 
 //search
-import { SearchPramas } from '@/types/search'
-export const reqSearchData = (params: SearchPramas) => http.get<SearchPageData>('/search', { params })
+import { SearchParams } from '@/types/search'
+export const reqSearchData = (params: SearchParams) => http.get<SearchPageData>('/search', { params })
 //({ url: '/search', method: 'get', data: params })
 
 //detail
@@ -22,14 +22,11 @@ export const updateCartChecked = (skuId: number, checked: 0 | 1) => request({ ur
 
 //login
 export const reqRegValCode = (email: string) => http.get(`/user/code/${ email }`)
-// ({ url: `/user/sendCode/${ email }`, method: 'get' })
 export const postUserSignup = (params: RegisterInfo) => http.post('/user/signup', params)
-// ({ url: `/user/signup`, method: 'post', data: params })
 export const postUserLogin = (params: LoginData) => http.post<LoginResponse>('/user/login', params)
-//request({ url: `/user/login`, method: 'post', data: params })
 export const getUserLoginInfo = () => http.get<LoginInfo>('/user/auth/loginInfo')
-//request({ url: `/user/auth/getUserInfo`, method: 'get' })
 export const logoutUserInfo = () => http.get('/user/logout')
+
 //request({ url: `/user/logout`, method: 'get' })
 
 //pay

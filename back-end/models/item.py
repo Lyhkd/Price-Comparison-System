@@ -1,7 +1,6 @@
 # models/item.py
 from datetime import datetime
 from sqlalchemy import UniqueConstraint, Index
-
 from . import db
 
 class Item(db.Model):
@@ -23,6 +22,18 @@ class Item(db.Model):
     )
     def __repr__(self):
         return f'<Item {self.name}>'
+    
+    def serialize(item) -> dict:
+        return {
+            'id': item.id,
+            'defaultImg': item.image_url,  # 映射 image_url 为 defaultImg
+            'currentPrice': item.current_price,
+            'title': item.title,
+            'link': item.link,
+            'shopName': item.shop,  # 映射 shop 为 shopName
+            'shopLink': item.shop_link,
+            'platform': item.platform
+        }
 
 class Price(db.Model):
     __tablename__ = 'prices'

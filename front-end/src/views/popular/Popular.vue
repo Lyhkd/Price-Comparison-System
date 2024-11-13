@@ -1,6 +1,6 @@
 <template>
     <div class="popular">
-        <type-nav :sort-hidden="true" />
+        <type-nav :sort-hidden="false" />
         <list-container />
     </div>
 </template>
