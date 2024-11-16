@@ -1,4 +1,5 @@
-from models import db, User
+from models import db
+from models.user import User
 from datetime import datetime, timezone
 import jwt
 

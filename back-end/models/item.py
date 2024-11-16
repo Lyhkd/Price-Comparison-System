@@ -14,6 +14,7 @@ class Item(db.Model):
     update_time = db.Column(db.DateTime, default=datetime.utcnow)
     current_price = db.Column(db.Float, nullable=False)
     platform = db.Column(db.String(100), nullable=True)
+    platform_info = db.relationship('Platform', backref=db.backref('items', lazy=True))
     shop = db.Column(db.String(255), nullable=True)
     shop_link = db.Column(db.String(255), nullable=True)
     sku = db.Column(db.String(255), nullable=True, unique=True)
@@ -35,25 +36,4 @@ class Item(db.Model):
             'platform': item.platform
         }
 
-class Price(db.Model):
-    __tablename__ = 'prices'
-    id = db.Column(db.Integer, primary_key=True)
-    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
-    platform = db.Column(db.String(100), nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
-    item = db.relationship('Item', backref=db.backref('prices', lazy=True))
     
-
-class Attribute(db.Model):
-    __tablename__ = 'attributes'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-
-class AttributeValue(db.Model):
-    __tablename__ = 'attribute_values'
-    id = db.Column(db.Integer, primary_key=True)
-    attribute_id = db.Column(db.Integer, db.ForeignKey('attributes.id'), nullable=False)
-    value = db.Column(db.String(100), nullable=False)
-
-    attribute = db.relationship('Attribute', backref=db.backref('values', lazy=True))

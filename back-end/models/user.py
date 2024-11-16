@@ -12,9 +12,11 @@ class User(db.Model):
     password = db.Column(db.String(256), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow,onupdate=datetime.utcnow)
     avatar = db.Column(db.String(128), nullable=False, default='https://cdn.pixabay.com/photo/2018/11/13/22/01/avatar-3814081_1280.png')
     phone = db.Column(db.String(20), unique=True, nullable=True)
-    watch = db.relationship('Watch', backref=db.backref('users', lazy=True))
+    alert_lists = db.relationship('PriceAlert', backref=db.backref('users', lazy=True))
+    search_history = db.relationship('SearchHistory', backref=db.backref('users', lazy=True))
     @staticmethod
     def generate_random_uid(length=8):
         characters = string.ascii_letters + string.digits  # 包含字母和数字
@@ -26,21 +28,21 @@ class User(db.Model):
             self.uid = User.generate_random_uid()  # 自动生成随机的uid
 
 
-class PriceAlert(db.Model):
-    __tablename__ = 'price_alerts'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
-    threshold_price = db.Column(db.Float, nullable=False)
-    notification_method = db.Column(db.String(50), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+class UserSettings(db.Model):
+    __tablename__ = 'user_settings'
     
-
-class Account(db.Model):
-    __tablename__ = 'accounts'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    platform = db.Column(db.String(50), nullable=False)
-    account = db.Column(db.String(100), nullable=False)
-    password = db.Column(db.String(128), nullable=False)
-
+    user_id = db.Column(db.BigInteger, primary_key=True)
+    notification_email = db.Column(db.Boolean, default=True)
+    notification_push = db.Column(db.Boolean, default=True)
+    notification_wechat = db.Column(db.Boolean, default=False)
+    theme = db.Column(db.String(20), default='light')
+    created_at = db.Column(db.TIMESTAMP, default=datetime.utcnow)
+    updated_at = db.Column(db.TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Foreign key
+    user = db.relationship('User', backref='settings', uselist=False)
+    
+    # Indexes
+    __table_args__ = (
+        db.Index('idx_user_time', 'user_id', 'created_at'),
+    )

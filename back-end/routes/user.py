@@ -84,6 +84,5 @@ def LoginInfo(username):
 
 # 用户注销
 @api.route('/user/logout', methods=['GET'])
-@token_required
-def logout(username):
+def logout():
     return jsonify({'code': 0, 'message': 'Logout success', 'data': {}}), 200

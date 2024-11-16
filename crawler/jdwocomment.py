@@ -88,6 +88,8 @@ class Content(AbstractWebPage):
             res = self.sess.get(url)
             res.encoding = 'utf-8'
             res = res.text
+            with open("good_info.html", 'w', encoding='utf-8') as f:
+                f.write(res)
             soup = BeautifulSoup(res, 'html.parser').select('#J_goodsList > ul')
             while (len(soup) == 0):
                 sleep(10)

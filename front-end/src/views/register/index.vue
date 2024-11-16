@@ -20,7 +20,9 @@
                                 <n-input v-model:value="registerForm.username" placeholder="请输入用户名" />
                             </n-form-item>
                             <n-form-item label="邮箱" path="email">
-                                <n-input v-model:value="registerForm.email" placeholder="请输入邮箱" />
+                                <n-auto-complete v-model:value="registerForm.email" :input-props="{
+                                    autocomplete: 'disabled',
+                                }" :options="email_options" placeholder="请输入邮箱" clearable />
                             </n-form-item>
                             <n-form-item label="密码" path="password">
                                 <n-input v-model:value="registerForm.password" type="password" placeholder="请输入密码" />
@@ -40,7 +42,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref, onMounted, computed } from 'vue'
 import { FormInst, FormRules } from 'naive-ui'
 import { useRouter, useRoute } from 'vue-router'
 import useLoginStore from '@/store/login'
@@ -106,7 +108,7 @@ export default defineComponent({
             await loginFormRef.value?.validate((errors) => {
                 if (errors) {
                     console.log('校验失败:', errors);
-                    return 
+                    return
                 }
             })
             try {
@@ -125,7 +127,7 @@ export default defineComponent({
             await registerFormRef.value?.validate((errors) => {
                 if (errors) {
                     console.log('校验失败:', errors);
-                    return 
+                    return
                 }
             })
             try {
@@ -138,6 +140,14 @@ export default defineComponent({
             }
         }
 
+        const email_options = computed(() => {
+            const prefix = registerForm.value.email.split('@')[0];
+            return ['@gmail.com', '@163.com', '@qq.com'].map((suffix) => ({
+                label: prefix + suffix,
+                value: prefix + suffix
+            }));
+        });
+
         return {
             loginForm,
             loginFormRef,
@@ -148,6 +158,7 @@ export default defineComponent({
             handleLogin,
             handleRegister,
             mode,
+            email_options
         }
     }
 })

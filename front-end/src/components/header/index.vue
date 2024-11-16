@@ -1,7 +1,7 @@
 <template>
   <!-- Header布局，固定高度 -->
   <n-layout :native-scrollbar="false" has-sider class="layout-header">
-    <n-button @click="console.log(searchStore.searchParams)">测试</n-button>
+    <!-- <n-button @click="console.log(searchStore.searchParams)">测试</n-button> -->
     <!-- 左侧Logo -->
     <n-layout-sider width="60px">
       <div class="logo" @click="$router.push({ name: 'home' })">
@@ -38,10 +38,10 @@
       <div v-if="loginStore.isLogin" style="height: 60px">
         <n-dropdown trigger="hover" @select="avatarSelect" :options="avatarOptions">
           <div class="avatar-box">
-            <n-avatar size="medium" round bordered :src="loginStore.loginInfo.avatar">
+            <n-avatar size="medium" round bordered :src="loginStore.userAvatar">
             </n-avatar>
             <n-divider vertical />
-            <span>{{ loginStore.loginInfo.username }}</span>
+            <span>{{ loginStore.userDisplayName }}</span>
           </div>
 
         </n-dropdown>
@@ -68,7 +68,6 @@ import useLoginStore from "@/store/login";
 import useSearchStore from "@/store/search";
 import {
   Home as HomeIcon,
-  LaptopOutline as WorkIcon,
   PersonSharp as UserIcon,
   PhonePortrait as ItemIcon,
   Search as SearchIcon
@@ -240,8 +239,8 @@ export default defineComponent({
   }
 
   .logo-image {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
   }
 
   .menu-box {

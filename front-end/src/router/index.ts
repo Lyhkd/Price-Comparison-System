@@ -10,13 +10,19 @@ export const routes = [
   {
     name: 'home',
     path: '/home',
-    component: () => import('@/views/home/Home.vue'),
+    component: () => import('@/views/home/index.vue'),
     meta: { showFooter: true },
   },
   {
     name: 'user',
     path: '/user',
     component: () => import('@/views/user/index.vue'),
+    meta: { showFooter: true },
+  },
+  {
+    name: 'price-alert',
+    path: '/price-alert',
+    component: () => import('@/views/price-alert/index.vue'),
     meta: { showFooter: true },
   },
   {

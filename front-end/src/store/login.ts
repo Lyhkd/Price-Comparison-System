@@ -19,6 +19,7 @@ import {
 import { LoginInfo}  from '@/types/login'
 import { ApiResponse } from '@/types'
 import { LoginData, LoginResponse } from '@/types/user'
+import user from '@/mock/user'
 
 //1定义并导出容器，容器ID必须唯一
 const useLoginStore = defineStore('useLoginStore', {
@@ -26,12 +27,12 @@ const useLoginStore = defineStore('useLoginStore', {
     return { 
       loginInfo : {} as (LoginInfo | undefined),
       isLogin : false,
-      token: '',
     }
   },
   getters: {
     userDisplayName: (state) => state.loginInfo?.username,
-    isAuthenticated: (state) => state.isLogin && !!state.token
+    userAvatar: (state) => state.loginInfo?.avatar,
+    userId: (state) => state.loginInfo?.uid,
 
   },
   
@@ -61,7 +62,6 @@ const useLoginStore = defineStore('useLoginStore', {
       const data : { token: string } = (await postUserLogin({ name, password }))
       if(data.token) {
         setToken(data.token)
-        this.token = data.token
         this.load()
         console.log('登录成功', data, this.isLogin)
       }
@@ -69,7 +69,6 @@ const useLoginStore = defineStore('useLoginStore', {
     async logout() {
       await logoutUserInfo()        
       removeToken()
-      this.token = ''
       this.loginInfo = undefined
       this.isLogin = false
     },
@@ -79,7 +78,7 @@ const useLoginStore = defineStore('useLoginStore', {
   persist: {
     enabled: true,
     strategies: [
-      { storage: localStorage, paths: ['isLogin', 'loginInfo', 'token'] }
+      { storage: localStorage, paths: ['isLogin', 'loginInfo'] }
     ],
   },
 
