@@ -3,24 +3,26 @@
     <n-spin :show="loading">
       <!-- 商品卡片容器 -->
       <div class="product-list">
-        <div class="product-row" v-for="item in searchResults" :key="item.id" >
+        <div class="product-row" v-for="item in searchResults" :key="item.id">
           <n-card class="product-card" @click="goToProductPage(item.id)">
-            <template #cover>
-              <div class="image-box">
-                <img :src="item.defaultImg" alt="商品图片" class="product-img" />
-              </div>
-            </template>
+              <template #cover>
+                <div class="image-box">
+                  <img v-if="!loading" :src="item.defaultImg" alt="商品图片" class="product-img" />
+                  <n-skeleton v-else height="40px" width="33%" />
+                  
+                </div>
+              </template>
             <n-skeleton v-if="loading" text width="60%" />
             <template v-else>
               <div class="product-title">
-                <span >{{ item.title }}</span>
+                <span>{{ item.title }}</span>
               </div>
-             
+
               <div class="product-footer">
                 <p class="price">¥{{ item.currentPrice }}</p>
                 <a :href="item.shopLink" target="_blank" class="shop-name">{{ item.shopName }}</a>
                 <p class="platform">平台: {{ item.platform }}</p>
-                
+
               </div>
             </template>
 
@@ -32,6 +34,9 @@
           </n-card>
         </div>
       </div>
+      <n-flex justify="end">
+        <n-pagination v-model:page="curPage" :page-count="pageInfo.totalPages" @change="updatePage" />
+      </n-flex>
     </n-spin>
   </div>
 </template>
@@ -74,17 +79,32 @@ export default defineComponent({
       loading.value = false;
     };
 
+    const updatePage = (page) => {
+      curPage.value = page; // 更新当前页码
+      // 更新路由参数
+      router.push({
+        query: {
+          ...route.query,
+          pageNo: page,
+        },
+      }).then(() => {
+        fetchSearchResults(); // 重新触发搜索
+      });
+    };
+
     function goToProductPage(id) {
       console.log('goToProductPage', id);
       router.push({
         name: 'item',
-        params: {id}})
+        params: { id }
+      })
     }
 
 
     // 从 store 获取商品列表
     const searchResults = computed(() => searchStore.goodsList);
-
+    const pageInfo = computed(() => searchStore.pageInfo);
+    const curPage = ref(1);
     onMounted(() => {
       fetchSearchResults(); // 页面加载时触发搜索
     });
@@ -92,7 +112,10 @@ export default defineComponent({
     return {
       loading,
       searchResults,
-      goToProductPage
+      goToProductPage,
+      pageInfo,
+      curPage,
+      updatePage
     };
   }
 });
@@ -107,24 +130,27 @@ export default defineComponent({
   margin: 0 auto;
   /* 居中对齐 */
   position: relative;
+
   /* 为绝对定位的内容设置父容器 */
-  .image-box{
+  .image-box {
     padding: 10px;
   }
 }
 
 .product-list {
-    width: 1200px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px; /* 设置卡片之间的间距 */
-  }
+  width: 1200px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  /* 设置卡片之间的间距 */
+}
 
 /* 每一行最多显示5个卡片 */
 .product-row {
   flex: 1 1 calc(20% - 16px);
   max-width: calc(20% - 16px);
   box-sizing: border-box;
+  margin-bottom: 30px;
 }
 
 /* 每个卡片包裹的 div，固定大小 */
@@ -137,7 +163,7 @@ export default defineComponent({
 .product-card {
   display: flex;
   flex-direction: column;
-  height: 400px;
+  height: 370px;
   /* 固定高度 */
   box-sizing: border-box;
   border-radius: 8px;
@@ -170,18 +196,23 @@ export default defineComponent({
   /* word-wrap: break-word; */
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.3s ease;  /* 添加过渡效果，使颜色变化更加平滑 */
+  transition: color 0.3s ease;
+  /* 添加过渡效果，使颜色变化更加平滑 */
 }
+
 .product-title:hover {
-  color: rgb(221, 0, 0);  /* 鼠标悬停时字体变红 */
-  cursor: pointer;  /* 鼠标变成可点击手形 */
+  color: rgb(221, 0, 0);
+  /* 鼠标悬停时字体变红 */
+  cursor: pointer;
+  /* 鼠标变成可点击手形 */
 }
 
 
-.platform{
+.platform {
   font-size: 12px;
   color: #999;
 }
+
 .price {
   font-size: 2em;
   font-weight: bold;
@@ -210,8 +241,7 @@ export default defineComponent({
 
 /* 商品信息区域 */
 .product-info {
-  padding: 10px;
+  padding: 20px;
   text-align: center;
 }
-
 </style>

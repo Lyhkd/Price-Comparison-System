@@ -33,7 +33,7 @@ def get_login_info(username):
     if user is None:
         return None
     info = {
-        "uid": user.uid,
+        "uid": user.id,
         "username": user.username,
         "email": user.email,
         "avatar": user.avatar

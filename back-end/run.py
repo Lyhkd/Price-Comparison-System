@@ -2,7 +2,10 @@ from flask import Flask
 from flask_cors import CORS
 from config import Config
 # from routes import api
-from models import db
+from models import *
+from models.price_alert import PriceAlert, AlertHistory
+
+from controllers.platform_controller import create_platform
 from routes import *
 from sqlalchemy import text
 
@@ -12,7 +15,9 @@ def db_init(app):
     with app.app_context():
         db.drop_all()
         db.create_all()  # 数据库初始化
-        db.session.execute(text('CREATE FULLTEXT INDEX idx_title ON items(search_title);'))
+        # db.session.execute(text('CREATE FULLTEXT INDEX idx_title ON items(search_title);'))
+        db.session.execute(text('ALTER TABLE items ADD FULLTEXT INDEX ngram_index (title) WITH PARSER ngram;'))
+
     print('Database initialized')
 
 app = Flask(__name__)

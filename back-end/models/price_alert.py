@@ -19,15 +19,15 @@ class PriceAlert(db.Model):
 class AlertHistory(db.Model):
     __tablename__ = 'alert_history'
     
-    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-    alert_id = db.Column(db.BigInteger, nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    alert_id = db.Column(db.Integer, db.ForeignKey("price_alerts.id"), nullable=False)
     price_before = db.Column(db.Numeric(10, 2), nullable=False)
     price_after = db.Column(db.Numeric(10, 2), nullable=False)
     notification_status = db.Column(db.JSON)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Foreign key
-    alert = db.relationship('PriceAlert', backref='alert_history', cascade='all, delete-orphan')
+    # alert = db.relationship('PriceAlert', backref='alert_history', cascade='all, delete-orphan')
     
     # Indexes
     __table_args__ = (

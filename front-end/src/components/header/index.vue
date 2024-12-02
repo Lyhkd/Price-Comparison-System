@@ -100,7 +100,7 @@ export default defineComponent({
     // const onInputChange = (value: string) => {
     //   searchInput.value = value
     // }
-    function onSearch() {
+    const onSearch = async() => {
       router.push({
         name: 'search',
         query: {
@@ -111,6 +111,14 @@ export default defineComponent({
           platform: "all", // 如果是数组，可以将其转成字符串
         },
         })
+        const searchParams = {
+        "keyword": searchInput.value,
+        "order": "default",
+        "platform": "all",
+        "pageNo": 1,
+        "pageSize": 30
+      };
+      await searchStore.updateParam(searchParams);
       console.log('搜索:', searchInput.value);
     }
 
@@ -189,13 +197,22 @@ export default defineComponent({
       },
       {
         label: () =>
-          h(RouterLink, { to: { name: "auth" } }, { default: () => "商品" }),
+          h(RouterLink, { to: {
+        name: 'search',
+        query: {
+          keyword: searchInput.value,
+          order: "default",
+          pageNo: 1,
+          pageSize: 30,
+          platform: "all", // 如果是数组，可以将其转成字符串
+        }
+        } }, { default: () => "商品" }),
         key: "item",
         icon: renderIcon(ItemIcon),
       },
       {
         label: () =>
-          h(RouterLink, { to: { path: "/user", query: { uid: userStore.userInfo.uid } } }, { default: () => "个人" }),
+          h(RouterLink, { to: { path: "/price-alert", query: { uid: loginStore.userId } } }, { default: () => "个人" }),
         key: "user",
         icon: renderIcon(UserIcon),
       },

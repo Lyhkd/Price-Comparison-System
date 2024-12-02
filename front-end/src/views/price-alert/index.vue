@@ -7,47 +7,48 @@
             <n-col span="1"></n-col>
             <n-col span="18">
                 <n-flex vertical justify="space-between">
-                    <n-card v-for="product in products" :key="product.id" :hoverable="true" class="product-card"
+                    <n-card v-for="alert in alertStore.alertList" :key="alert.id" :hoverable="true" class="product-card"
                         embedded>
                         <n-grid x-gap="12" :cols="24">
                             <n-gi span="5">
-                                <img :src="product.image" alt="product" class="product-image" />
+                                <img :src="alert.imageUrl" alt="product" class="product-image" />
                                 <div class="reminder-history">
                                     <h3>提醒历史</h3><br />
                                     <n-timeline :reverse="true">
-                                        <n-timeline-item v-for="(alert, index) in product.alertHistory.slice(-3)"
-                                            :key="index" :title="alert.message" :time="alert.timestamp">
+                                        <n-timeline-item v-for="(alertHist, index) in validAlertHistory(alert.alertHistory).slice(-3)"
+                                            :key="index" :title="generateTitle(alertHist)" :time="alertHist.createdAt">
                                         </n-timeline-item>
                                     </n-timeline>
                                 </div>
                             </n-gi>
                             <n-gi span="5">
                                 <div class="product-card-left">
-                                    
-                                    <div class="product-info">
-                                        <p>{{ product.name }}
-                                        </p>
-                                        
-                                        <p class="product-price">提醒价格：{{ product.price }} 元</p>
-                                        
 
-                                        <n-button size="small" @click="editPrice(product)">修改价格</n-button>
+                                    <div class="product-info">
+                                        <n-text @click="goToItem(alert.itemId)" class="alert-title">{{ alert.title }}</n-text>
+
+                                        <p class="product-price">当前价格：{{ alert.currentPrice }} 元</p>
+
+                                        <p class="product-price">提醒价格：{{ alert.targetPrice }} 元</p>
+                                        
                                         <span>提醒方式：</span>
-                                        <n-checkbox-group v-model:value="methods">
-                                            <n-space item-style="display: flex;">
-                                                <n-checkbox value="Email" label="邮箱" />
-                                                <n-checkbox value="Message" label="短信" />
-                                            </n-space>
-                                        </n-checkbox-group>
-                                        <span>开启提醒：<n-switch v-model:value="active" /></span>
+                                        <n-radio-group v-model:value="alert.notificationMethod" @change="Update(alert)">
+                                                <n-radio-button value="email" label="邮箱" />
+                                                <n-radio-button value="sms" label="短信" />
+                                        </n-radio-group>
+                                        <span>开启提醒：<n-switch v-model:value="alert.enable" @change="Update(alert)"/></span>
+                                        <n-space >
+                                            <n-button size="small"  @click="editAlert(alert)">修改</n-button>
+                                            <n-button size="small" @click="deleteAlert(alert.id)">删除</n-button>
+                                        </n-space>
                                     </div>
                                 </div>
 
-                                
+
                             </n-gi>
                             <n-gi span="14">
                                 <div class="product-card-right">
-                                    <PriceChart :priceHistory="product.priceHistory.slice(-5)" />
+                                    <PriceChart :priceHistory="validAlertHistory(alert.priceHistory).slice(-5)" />
                                 </div>
                             </n-gi>
                         </n-grid>
@@ -59,110 +60,109 @@
 
             </n-col>
         </n-row>
+        <!-- 修改警报的 Modal -->
+    <n-modal v-model:show="showEdit" style="width: 400px;" title="修改" preset="card" label-placement="left" >
+      <n-form :model="editForm">
+        <n-form-item label="目标价格" path="targetPrice">
+          <n-input-number v-model:value="editForm.targetPrice" />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space>
+            
+        <n-button @click="showEdit = false">取消</n-button>
+        <n-button type="primary" @click="updateAlert">确认</n-button>
+    </n-space>
+      </template>
+    </n-modal>
+    
+    <!-- 删除警报的确认框 -->
+    <n-modal v-model:show="showDelete" style="width: 400px;" title="确认删除" preset="card" label-placement="left" >
+      <div>你确定要删除这个提醒吗？</div>
+      <template #footer>
+        <n-space>
+        <n-button @click="showDelete = false">取消</n-button>
+        <n-button type="error" @click="deleteAlertConfirmed">确认</n-button>
+    </n-space>
+      </template>
+    </n-modal>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { NCard, NButton, NTimeline, NTimelineItem } from 'naive-ui';
+import { useRoute, useRouter } from 'vue-router';
 import UserPanel from './UserPanel/index.vue';
 import PriceChart from './PriceChart/index.vue'
-
+import useLoginStore from '@/store/login';
+import { useAlertStore } from '@/store/alerts';
+const loginStore = useLoginStore();
+const alertStore = useAlertStore();
+const router = useRouter();
+const generateTitle = (alertHist) => {
+  const status = alertHist.notificationStatus === 'sent' ? '已提醒' : '未提醒';
+  return `${status}：价格从 ${alertHist.priceBefore} 降到了 ${alertHist.priceAfter}`;
+};
+const validAlertHistory = (alertHistory) => {
+  return Array.isArray(alertHistory) ? alertHistory : [];
+};
+onMounted(async () => {
+        try {
+            await alertStore.fetchAlerts(loginStore.userId);
+            console.log('Fetched alerts:', alertStore.alertList);
+        } catch (err) {
+            console.error('Failed to fetch item:', err);
+        }
+    console.log('price alert page mounted');
+});
 // 模拟数据
-const products = ref([
-    {
-        id: 1,
-        name: '商品 A',
-        price: 199,
-        image: 'https://via.placeholder.com/150',
-        priceHistory: [
-            { date: '2024-01-01', price: 3499 },
-            { date: '2024-02-01', price: 3199 },
-            { date: '2024-03-01', price: 2999 },
-            { date: '2024-04-01', price: 2899 },
-            { date: '2024-05-01', price: 2899 },
-            { date: '2024-06-01', price: 2099 },
-            { date: '2024-07-01', price: 2899 },
-            { date: '2024-08-01', price: 3799 },
-        ],
-        alertHistory: [
-            { title: '商品 A 价格提醒', timestamp: '2024-10-01', message: '降至 199 元' },
-            { title: '商品 A 价格提醒', timestamp: '2024-10-02', message: '降至 199 元' },
-        ],
-    },
-    {
-        id: 2,
-        name: '商品 B',
-        price: 299,
-        image: 'https://via.placeholder.com/150',
-        priceHistory: [
-            { date: '2024-01-01', price: 3199 },
-            { date: '2024-02-01', price: 3100 },
-            { date: '2024-03-01', price: 2900 },
-            { date: '2024-04-01', price: 2800 },
-            { date: '2024-05-01', price: 2800 },
-            { date: '2024-06-01', price: 2600 },
-        ],
-        alertHistory: [
-            { title: '商品 B 价格提醒', timestamp: '2024-10-02', message: '降至 270 元' },
-        ],
-    },
-    {
-        id: 3,
-        name: '商品 C',
-        price: 199,
-        image: 'https://via.placeholder.com/150',
-        priceHistory: [
-            { date: '2024-01-01', price: 3499 },
-            { date: '2024-02-01', price: 3199 },
-            { date: '2024-03-01', price: 2999 },
-            { date: '2024-04-01', price: 2899 },
-            { date: '2024-05-01', price: 2899 },
-            { date: '2024-06-01', price: 2099 },
-            { date: '2024-07-01', price: 2899 },
-            { date: '2024-08-01', price: 3799 },
-        ],
-        alertHistory: [
-            { title: '商品 C 价格提醒', timestamp: '2024-10-01', message: '价格降至 199 元' },
-        ],
-    },
-    {
-        id: 4,
-        name: '商品 D',
-        price: 199,
-        image: 'https://via.placeholder.com/150',
-        priceHistory: [
-            { date: '2024-01-01', price: 3499 },
-            { date: '2024-02-01', price: 3199 },
-            { date: '2024-03-01', price: 2999 },
-            { date: '2024-04-01', price: 2899 },
-            { date: '2024-05-01', price: 2899 },
-            { date: '2024-06-01', price: 2099 },
-            { date: '2024-07-01', price: 2899 },
-            { date: '2024-08-01', price: 3799 },
-        ],
-        alertHistory: [
-            { title: '商品 D 价格提醒', timestamp: '2024-10-01 ', message: '价格降至 199 元' },
-            { title: '商品 D 价格提醒', timestamp: '2024-10-02', message: '价格降至 199 元' },
-        ],
-    },
-]);
-
-const reminderHistory = ref([
-    { title: '商品 A 价格提醒', timestamp: '2024-10-01', message: '价格降至 199 元' },
-    { title: '商品 B 价格提醒', timestamp: '2024-10-02', message: '价格降至 270 元' },
-]);
-
-const editPrice = (product) => {
-    console.log(`修改价格: ${product.name}`);
+const goToItem = (itemId) => {
+  router.push({ path: `/item/${itemId}` });
 };
 
-const editAlertMethod = (product) => {
-    console.log(`修改提醒方式: ${product.name}`);
+const showEdit = ref(false);
+const showDelete = ref(false);
+
+
+
+
+const deleteAlertId = ref(null);
+
+const deleteAlert = (alertId) => {
+    console.log('delete alert:', alertId);
+  deleteAlertId.value = alertId;
+  showDelete.value = true;
+  console.log('show delete:', showDelete.value);
 };
 
-const active = ref(false)
-const methods = ref(null)
+const deleteAlertConfirmed = async () => {
+  await alertStore.deleteAlert(deleteAlertId.value, loginStore.userId); // 假设用户ID为1
+  showDelete.value = false;
+};
+
+const editForm = ref({
+  id: null,
+  targetPrice: null,
+  notificationMethod: null,
+  enable: null,
+});
+
+const editAlert = (alert) => {
+    console.log('edit alert:', alert);
+    editForm.value = { ...alert };
+    showEdit.value = true;
+};
+const updateAlert = async () => {
+  await alertStore.updateAlert(editForm.value.id, loginStore.userId, { "targetPrice":editForm.value.targetPrice, "notificationMethod": editForm.value.notificationMethod, "enable": editForm.enable } ); // 假设用户ID为1
+  showEdit.value = false;
+};
+const Update = async (alert) => {
+    await alertStore.updateAlert(alert.id, loginStore.userId, { "targetPrice":alert.targetPrice, "notificationMethod": alert.notificationMethod, "enable": alert.enable } ); // 假设用户ID为1
+    console.log('method update:', alert);
+};
+
+
 </script>
 
 <style scoped>
@@ -224,5 +224,17 @@ const methods = ref(null)
 .reminder-history {
     margin-top: 10px;
     height: auto;
+}
+.alert-title{
+    cursor: pointer; 
+    font-size: 15px;
+    max-height: 70px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+}
+
+.alert-title :hover {
+  color: #0056b3; /* 悬浮时更深的颜色 */
 }
 </style>

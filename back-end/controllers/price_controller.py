@@ -7,9 +7,19 @@ def get_price_history(product_id, platform_id=None, platform_name=None):
     if platform_name is not None:
         platform_id = get_platform_id(platform_name)
     if platform_id is not None:
-        price_history = PriceHistory.query.filter_by(product_id=product_id, platform_name=platform_name).all()
-    price_history = PriceHistory.query.filter_by(product_id=product_id).all()
-    return price_history
+        price_history = PriceHistory.query.filter_by(item_id=product_id, platform_id=platform_id).all()
+    price_history = PriceHistory.query.filter_by(item_id=product_id).all()
+    res = []
+    for price in price_history:
+        date = price.date.strftime("%Y-%m-%d")
+        if len(res) > 0 and res[-1]['date'] == date:
+            res[-1]['price'] = price.price
+        else: 
+            res.append({
+                'price': price.price,
+                'date': date
+            })
+    return res
 
 def add_price_history(data):
     # data {
@@ -37,6 +47,6 @@ def add_price_history(data):
     
     
 def add_item_price_history(item):
-    price_history = PriceHistory(item_id=item.id, platform_id=item.platform_info.id, price=item.current_price)
+    price_history = PriceHistory(item_id=item.id, platform_id=item.platform_id, price=item.current_price)
     db.session.add(price_history)
     db.session.commit()

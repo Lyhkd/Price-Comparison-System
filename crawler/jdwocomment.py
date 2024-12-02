@@ -72,9 +72,26 @@ class Content(AbstractWebPage):
                     else:
                         good_info.append("无图片链接")
             f.close()
-    
+    def get_detail(self, sku=None):
+        sku = 100149996442
+        commit_start_url = f'https://item.jd.com/{sku}.html'
+        # 发送请求，得到结果
+        res = self.sess.get(commit_start_url)
+        paras = BeautifulSoup(res.text, 'html.parser').select('[class=p-parameter]')
+        pics = BeautifulSoup(res.text, 'html.parser').select('[class=spec-items]')
+        pictures = pics[0].select('img')
+        parameters = paras[0].select('li')
+        # brand = soup[0].select('li')[0].get('title')
+        attr = {}
+        for parameter in parameters:
+            attr[parameter.get_text().split('：')[0]] = parameter.get_text().split('：')[1].strip()
+        attr['img_plus'] = ""
+        for pic in pictures:
+            attr['img_plus'] += "https:"+pic.get('src')+";"
+        print(attr)
+        return parameters
     def get_item_info_xslx(self):
-        wb = openpyxl.load_workbook("good_info2.xlsx")
+        wb = openpyxl.load_workbook("/Users/lyhkd/ZJU/Fall2024/BS/Price-Comparison-System/crawler/good_info2.xlsx")
         ws = wb.active  # 默认获取活动工作表，如果有多个工作表，可以通过 wb[sheet_name] 获取指定工作表
 
         # 确保表头存在，如果没有表头，添加表头
@@ -88,20 +105,33 @@ class Content(AbstractWebPage):
             res = self.sess.get(url)
             res.encoding = 'utf-8'
             res = res.text
-            with open("good_info.html", 'w', encoding='utf-8') as f:
-                f.write(res)
+            # with open("good_info.html", 'w', encoding='utf-8') as f:
+            #     f.write(res)
             soup = BeautifulSoup(res, 'html.parser').select('#J_goodsList > ul')
             while (len(soup) == 0):
                 sleep(10)
                 soup = BeautifulSoup(res, 'html.parser').select('#J_goodsList > ul')
             # 定位搜索结果主体，并获取所有的商品的标签
             good_list = soup[0].select('[class=gl-item]')
-            
+            print("get good_list", len(good_list))
             # 循环获取所有商品信息
             for temp in good_list:
                 # sku
                 sku = temp.get('data-sku').strip()
                 good_info = [sku]
+                commit_start_url = f'https://item.jd.com/{sku}.html'
+                # 发送请求，得到结果
+                comment_res = self.sess.get(commit_start_url)
+                # 编码方式是GBK国标编码
+                # comment_res.encoding = 'gbk'
+                print(comment_res.text)
+                # comment_res_json = comment_res.json()
+
+                # 解析得到评论数量
+                # print(comment_res_json['CommentsCount'][0]['CommentCountStr'])
+                exit()
+
+
                 # 获取名称信息
                 name_div = temp.select_one('[class="p-name p-name-type-2"]')
                 name = name_div.text.strip()
@@ -146,7 +176,8 @@ if __name__ == "__main__":
         cookie_str = f.readline()
     
     # 输入cookie，关键词，输入结束页数
-    content_page = Content(cookie_str, '电脑', 3)
+    content_page = Content(cookie_str, '手机', 3)
     content_page.print()
 
-    content_page.get_item_info_xslx()
+    # content_page.get_item_info_xslx()
+    content_page.get_detail()

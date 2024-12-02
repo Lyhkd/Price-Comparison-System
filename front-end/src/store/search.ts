@@ -15,7 +15,7 @@ const useSearchStore = defineStore('search', {
     }
 
     const searchParams: SearchParams = {
-      keyword: 'iphone',
+      keyword: '',
       order: 'desc',
       pageNo: 1,
       pageSize: 10,
@@ -49,7 +49,7 @@ const useSearchStore = defineStore('search', {
   actions: { 
 
     async updatePageData() {
-      this.searchParams.pageNo = 1
+      // this.searchParams.pageNo = 1
       this.pageData = (await reqSearchData(this.searchParams)) as SearchPageData
     },
 

@@ -13,14 +13,11 @@ class Item(db.Model):
     create_time = db.Column(db.DateTime, default=datetime.utcnow)
     update_time = db.Column(db.DateTime, default=datetime.utcnow)
     current_price = db.Column(db.Float, nullable=False)
-    platform = db.Column(db.String(100), nullable=True)
-    platform_info = db.relationship('Platform', backref=db.backref('items', lazy=True))
+    platform_id = db.Column(db.Integer, db.ForeignKey('platforms.id'), nullable=True)
     shop = db.Column(db.String(255), nullable=True)
     shop_link = db.Column(db.String(255), nullable=True)
-    sku = db.Column(db.String(255), nullable=True, unique=True)
-    __table_args__ = (
-        UniqueConstraint('title', 'shop', name='uix_name_shop'),
-    )
+    sku = db.Column(db.String(255), nullable=False, unique=True)
+    description = db.Column(db.String(2048), nullable=True)
     def __repr__(self):
         return f'<Item {self.name}>'
     
@@ -33,7 +30,7 @@ class Item(db.Model):
             'link': item.link,
             'shopName': item.shop,  # 映射 shop 为 shopName
             'shopLink': item.shop_link,
-            'platform': item.platform
+            'platform': item.platform_id
         }
 
     

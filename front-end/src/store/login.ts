@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 
-import useCartStore from '@/store/cart'
 
 import {
   reqRegValCode,
@@ -16,13 +15,10 @@ import {
   removeToken
 } from '@/libs/token'
 
-import { LoginInfo}  from '@/types/login'
-import { ApiResponse } from '@/types'
-import { LoginData, LoginResponse } from '@/types/user'
-import user from '@/mock/user'
+import { LoginInfo }  from '@/types/login'
 
 //1定义并导出容器，容器ID必须唯一
-const useLoginStore = defineStore('useLoginStore', {
+export const useLoginStore = defineStore('useLoginStore', {
   state : () => {
     return { 
       loginInfo : {} as (LoginInfo | undefined),

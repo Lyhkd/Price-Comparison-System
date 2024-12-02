@@ -5,9 +5,20 @@ def is_platform_exist(platform_name):
     platform = Platform.query.filter_by(name=platform_name).first()
     return platform is not None
 
+def get_platform_name(platform_id):
+    platform = Platform.query.filter_by(id=platform_id).first()
+    return platform.name
+
 def get_platform_id(platform_name):
     platform = Platform.query.filter_by(name=platform_name).first()
+    if platform is None:
+        create_platform(platform_name)
+        platform = Platform.query.filter_by(name=platform_name).first()
     return platform.id
+
+def get_platform_url(platform_id):
+    platform = Platform.query.filter_by(id=platform_id).first()
+    return platform.logo_url
 
 def create_platform(platform_name, logo_url=None):
     logo_dict = {

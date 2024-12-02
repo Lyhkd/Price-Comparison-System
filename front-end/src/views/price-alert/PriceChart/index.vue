@@ -28,9 +28,12 @@ export default {
       const prices = data.map(item => item.price);
       const maxPrice = Math.max(...prices);
       const minPrice = Math.min(...prices);
-      const avgPrice = prices.reduce((acc, cur) => acc + cur, 0) / prices.length;
-      const maxPriceDate = data.find(item => item.price === maxPrice).date;
-      const minPriceDate = data.find(item => item.price === minPrice).date;
+      const epsilon = 1e-6; // 容忍误差范围
+      const maxPriceItem = data.find(item => Math.abs(item.price - maxPrice) < epsilon);
+      const minPriceItem = data.find(item => Math.abs(item.price - minPrice) < epsilon);
+
+      const maxPriceDate = maxPriceItem ? maxPriceItem.date : '未知';
+      const minPriceDate = minPriceItem ? minPriceItem.date : '未知';
 
       const option = {
         tooltip: {

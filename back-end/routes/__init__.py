@@ -6,3 +6,5 @@ api = Blueprint('api', __name__)
 
 from .user import *
 from .search import *
+from .alert import *
+# from .item import *

@@ -1,2 +1,2 @@
-from .item_controller import search_items_from_websites, search_items_indb_pagination
+from .item_controller import search_items_from_websites, search_items_indb_pagination, get_random_items
 

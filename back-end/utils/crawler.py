@@ -1,6 +1,7 @@
 import requests, json
 from bs4 import BeautifulSoup
 from time import sleep
+import openpyxl
 
 class Crawler(object):
     def __init__(self, cookie, use_cookie=True):
@@ -71,12 +72,78 @@ class Crawler(object):
                 img_div = temp.select_one('[class=p-img]').select_one('img')
                 img_url = "https:" + img_div.get('data-lazy-img')
                 item_info['img_url'] = img_url
+            
 
                 # 将商品信息字典加入列表
                 item_list.append(item_info)
             sleep(1)
         # 返回商品字典列表
         return item_list
+    
+    def get_detail(self, sku=None):
+        commit_start_url = f'https://item.jd.com/{sku}.html'
+        # 发送请求，得到结果
+        res = self.sess.get(commit_start_url)
+        price = BeautifulSoup(res.text, 'html.parser').select('[class=price]')
+        paras = BeautifulSoup(res.text, 'html.parser').select('[class=p-parameter]')
+        pics = BeautifulSoup(res.text, 'html.parser').select('[class=spec-items]')
+        pictures = pics[0].select('img')
+        parameters = paras[0].select('li')
+        # brand = soup[0].select('li')[0].get('title')
+        attr = {}
+        for parameter in parameters:
+            attr[parameter.get_text().split('：')[0]] = parameter.get_text().split('：')[1].strip()
+        attr['img_list'] = ""
+        for pic in pictures:
+            attr['img_list'] += pic.get('src')+";"
+        # print(attr)
+        return attr
+    
+    def get_detail_string(self, sku):
+        attrs = self.get_detail(sku) 
+        if len(attrs.keys()) == 0:
+            return None
+        # print(attrs)
+        results = ''
+        for (key, value) in attrs.items():
+            results += key+':'+value+'\n'
+        return results
+
+    def read_good_info_xlsx(self, file_path):
+        """
+        从xlsx文件中读取商品信息，并返回字典列表。
+
+        :param file_path: xlsx文件路径
+        :return: 包含商品信息的字典列表
+        """
+        wb = openpyxl.load_workbook(file_path)
+        ws = wb.active  # 默认读取活动工作表
+        
+        # 检查表头
+        headers = [cell.value for cell in ws[1]]  # 获取第一行作为表头
+        expected_headers = ["sku", "title", "link", "price", "shop", "shop_link", "img_url"]
+        if headers != expected_headers:
+            raise ValueError(f"表头与预期不符，请检查文件格式！预期表头为: {expected_headers}")
+
+        # 初始化商品信息字典列表
+        item_list = []
+
+        # 从第二行开始读取数据
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            # 将每一行数据转换为字典
+            item_info = {
+                "sku": row[0],
+                "title": row[1].replace('\n', '').replace('\t', '').strip(),
+                "link": row[2],
+                "price": row[3],
+                "shop": row[4],
+                "shop_link": row[5],
+                "img_url": row[6],
+            }
+            item_list.append(item_info)
+        
+        return item_list
+
 
     def to_json(self):
         return json.dumps(self.get_item_info_dict(), ensure_ascii=False)

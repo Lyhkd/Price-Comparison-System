@@ -12,8 +12,16 @@ export const reqSearchData = (params: SearchParams) => http.get<SearchPageData>(
 //({ url: '/search', method: 'get', data: params })
 
 //detail
-export const reqDetailData = (id: number) => request({ url: `/item/${ id }`, method: 'get' })
+//export const reqItemData = (id: number) => request({ url: `/item/${ id }`, method: 'get' })
+export const reqItemData = (id: number) => http.get(`/item/${ id }`)
+export const reqPriceHistory = (id: number) => http.get(`/item/price/${ id }`)
 
+//price-alert
+export const postPriceAlert = (data: any) => http.post('/alert', data)
+export const getAlertList = (uid: number) => http.get(`/alert/${ uid }`)
+export const updateAlert = (id: number, data: any) => http.put(`/alert/${ id }`, data)
+export const getAlertHistory = (id: number) => http.get(`/alert/history/${ id }`)
+export const deleteAlert = (id: number) => http.delete(`/alert/${ id }`)
 //cart
 export const postCartData = (id: number, quantity: number) => request({ url: `/cart/addToCart/${ id }/${ quantity }`, method: 'post' })
 export const reqCartData = () => request({ url: '/cart/cartList', method: 'get' })

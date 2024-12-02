@@ -79,3 +79,22 @@ export interface SpuSaleAttrValue {
   saleAttrName: string,
   isChecked: string  
 }
+
+interface Item {
+  id: string;
+  title: string;
+  link: string;
+  imageUrl: string;
+  currentPrice: number;
+  shop: string;
+  shopLink: string;
+  platform: string;
+  attrs: Record<string, any>;
+  imgList: string[];
+}
+
+interface ItemState {
+  item: Item | null;
+  loading: boolean;
+  error: string | null;
+}

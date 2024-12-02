@@ -15,8 +15,9 @@
         </n-col>
         <n-col span="10">
           <div class="product-gallery">
-          <image-gallery :images="product.images" />
-        </div>
+            <img :src="store.itemData.imageUrl" alt="商品图片" class="product-image" />
+            <!-- <image-gallery :images="store.itemData.imgList" /> -->
+          </div>
 
         </n-col>
 
@@ -24,8 +25,10 @@
           <n-space vertical size="large">
             <div class="product-header">
               <n-space vertical size="small">
-                <h1 class="title">{{ product.name }}</h1>
-                <n-text depth="3" class="subtitle">{{ product.subtitle }}</n-text>
+                <a class="title-link" :href="store.itemData.link" target="_blank">
+                  <h1 class="title">{{ store.itemData.title }}</h1>
+                </a>
+
               </n-space>
             </div>
 
@@ -34,106 +37,73 @@
               <n-space vertical size="small">
                 <n-space align="center">
                   <n-text class="price-label">价格</n-text>
-                  <n-text class="current-price">¥{{ product.price }}</n-text>
-                  <n-tag v-if="product.discount" type="error" size="small">
-                    {{ product.discountText }}
+                  <n-text class="current-price">¥{{ store.itemData.currentPrice }}</n-text>
+                  <n-tag  type="error" size="small">
+                    特价
                   </n-tag>
                 </n-space>
-                <n-text class="original-price" v-if="product.originalPrice">
-                  原价: <span class="line-through">¥{{ product.originalPrice }}</span>
-                </n-text>
               </n-space>
             </n-card>
 
             <!-- 商品信息区域 -->
             <n-card embedded>
-              <n-grid :cols="24" :x-gap="12" :y-gap="8">
-                <n-grid-item :span="6">
-                  <n-text depth="3">品牌</n-text>
-                </n-grid-item>
-                <n-grid-item :span="18">
-                  <n-space>
-                    <n-avatar
-                      v-if="product.brandLogo"
-                      :src="product.brandLogo"
-                      :size="24"
-                    />
-                    <n-text>{{ product.brand }}</n-text>
-                  </n-space>
-                </n-grid-item>
 
-                <n-grid-item :span="6">
-                  <n-text depth="3">产地</n-text>
-                </n-grid-item>
-                <n-grid-item :span="18">
-                  <n-text>{{ product.origin }}</n-text>
-                </n-grid-item>
+              <n-descriptions label-placement="top" title="商品详情" size="small">
+                <n-descriptions-item v-for="(value, key) in store.itemData.attrs" :key="key" :label="key">
+                  {{ value }}
+                </n-descriptions-item>
+                <n-descriptions-item label="店铺">
+                  <a :href="store.itemData.shopLink" target="_blank">{{ store.itemData.shop }}</a>
+                </n-descriptions-item>
+              </n-descriptions>
 
-                <n-grid-item :span="6">
-                  <n-text depth="3">库存</n-text>
-                </n-grid-item>
-                <n-grid-item :span="18">
-                  <n-text>{{ product.stock }}件</n-text>
-                </n-grid-item>
-
-                <n-grid-item :span="6">
-                  <n-text depth="3">类别</n-text>
-                </n-grid-item>
-                <n-grid-item :span="18">
-                  <n-space>
-                    <n-tag v-for="cat in product.categories" :key="cat">
-                      {{ cat }}
-                    </n-tag>
-                  </n-space>
-                </n-grid-item>
-
-                <n-grid-item :span="6">
-                  <n-text depth="3">店铺</n-text>
-                </n-grid-item>
-                <n-grid-item :span="18">
-                  <n-text>{{ product.shop }}</n-text>
-                </n-grid-item>
-
-                <n-grid-item :span="6">
-                  <n-text depth="3">渠道</n-text>
-                </n-grid-item>
-                <n-grid-item :span="18">
-                  <n-text>{{ product.platform.name }}</n-text>
-                </n-grid-item>
-              </n-grid>
             </n-card>
 
             <!-- 价格提醒 -->
-            <n-button
-              type="info"
-              secondary
-              block
-              @click="addToPriceAlert"
-              class="alert-button"
-            >
+            <n-button type="info" secondary block @click="addToPriceAlert" class="alert-button">
               <template #icon>
-                <n-icon><NotificationsOutline /></n-icon>
+                <n-icon>
+                  <NotificationsOutline />
+                </n-icon>
               </template>
               添加价格提醒
             </n-button>
+            
           </n-space>
 
         </n-col>
       </n-row>
-        <!-- 左侧图片展示区 -->
-        
+      <!-- 左侧图片展示区 -->
 
-        <!-- 右侧商品信息区 -->
-        
+      <n-modal v-model:show="showDialog" title="设置价格提醒" preset="card" style="width: 400px; max-width: 90%;">
+              <n-form ref="priceForm" :model="form" label-placement="left" class="alert-form">
+                <n-form-item label="价格" path="price">
+                  <n-input-number v-model:value="form.price" placeholder="请输入希望的价格" />
+                </n-form-item>
+                <n-form-item label="提醒方式" path="method">
+                  <n-select v-model:value="form.method" :options="methods" placeholder="请选择提醒方式" />
+                </n-form-item>
+              </n-form>
+              <template #action>
+                <n-space justify="end">
+                  <n-button @click="showDialog = false">取消</n-button>
+                  <n-button type="primary" @click="handleSubmit">确定</n-button>
+                </n-space>
+              </template>
+            </n-modal>
+      <!-- 右侧商品信息区 -->
+
       <!-- 历史价格走势图 -->
+      <n-button @click="console.log(store.priceHistory)">查看历史价格</n-button>
       <n-card class="price-history" embedded>
         <n-tabs type="line" animated size="large">
-      <n-tab-pane name="历史价格走势" tab="历史价格走势">
-        <price-chart :priceHistory="product.priceHistory" />
-      </n-tab-pane>
-    </n-tabs>
+          <n-tab-pane name="历史价格走势" tab="历史价格走势">
+            <price-chart :priceHistory="store.priceHistory" />
+          </n-tab-pane>
+
+        </n-tabs>
       </n-card>
-      
+
 
       <!-- 相关商品推荐 -->
       <n-card class="related-products" embedded>
@@ -147,7 +117,7 @@
           <n-grid-item v-for="item in relatedProducts" :key="item.id">
             <n-card hoverable class="related-product-card">
               <template #cover>
-                <img :src="item.image" :alt="item.name" class="related-product-image"/>
+                <img :src="item.image" :alt="item.name" class="related-product-image" />
               </template>
               <n-space vertical>
                 <n-text class="related-product-name">{{ item.name }}</n-text>
@@ -163,45 +133,61 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { NCard, NButton, NTag } from 'naive-ui'
 import ImageGallery from './ImageGallery/index.vue'
-import PriceChart from '@/components/PriceChart/index.vue'
-import {NotificationsOutline} from "@vicons/ionicons5";
-const product = ref({
-  id: '1',
-  name: '一加 13 16GB+512GB 白露晨曦 高通骁龙®8至尊版 6000mAh 冰川电池 AI智能游戏手机 旗舰影像性能手机',
-  description: '一款最新的智能手机，具备极高性价比。采用最新处理器，搭载高清摄像头，支持快速充电。',
-  price: 2999,
-  originalPrice: 3499,
-  discount: true,
-  discountText: '特价',
-  category: '手机数码',
-  origin: '中国广东',
-  stock: 999,
-  shop: "京东自营",
-  images: [
-    'https://img14.360buyimg.com/n0/jfs/t1/188881/37/48138/79664/6731d9b9F6687d116/1da6c8a74922838d.jpg',
-    'https://img14.360buyimg.com/n0/jfs/t1/197364/36/44790/38276/67232fdbFeb5046c9/ae8082fa9ad66ae3.jpg',
-    'https://img14.360buyimg.com/n0/jfs/t1/204657/25/46978/60818/6714e372F5a1993b4/c5b58415ff76bb7d.png'
-  ],
-  priceHistory: [
-    { date: '2024-01-01', price: 3499 },
-    { date: '2024-02-01', price: 3199 },
-    { date: '2024-03-01', price: 2999 },
-    { date: '2024-04-01', price: 2899 },
-    { date: '2024-05-01', price: 2899 },
-    { date: '2024-06-01', price: 2099 },
-    { date: '2024-07-01', price: 2899 },
-    { date: '2024-08-01', price: 3799 },
-  ],
-  platform: 
-    {
-      name: '京东',
-      url: 'https://jd.com/product/12345',
-      icon: '/icons/jd.png'
+import PriceChart from './PriceChart/index.vue'
+import { NotificationsOutline } from "@vicons/ionicons5";
+import { onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useItemStore } from '@/store/item';
+import useLoginStore from '@/store/login';
+const route = useRoute();
+const router = useRouter();
+const store = useItemStore();
+const loginStore = useLoginStore();
+
+onMounted(async () => {
+  const itemId = route.params.id;
+  if (itemId) {
+    try {
+      console.log("fetching item", itemId);
+      await store.fetchItem(itemId);
+    } catch (err) {
+      console.error('Failed to fetch item:', err);
     }
-})
+  }
+});
+
+
+
+const methods = [
+  { label: '短信', value: 'sms' },
+  { label: '邮件', value: 'email' },
+]; // 提醒方式选项
+
+const handleSubmit = async () => {
+  console.log(store.itemData.id, store.itemId)
+  const data = {
+    "targetPrice": form.value.price,
+    "notificationMethod": form.value.method,
+    "userId": loginStore.userId,
+    "itemId": store.itemId,
+  }
+  await store.addAlert(data);
+  console.log(form.value);
+};
+
+const showDialog = ref(false); // 控制对话框显示
+
+const form = ref({
+  price: store.itemData.currentPrice,
+  method: null,
+}); // 表单数据
+
+watch(() => store.itemData.currentPrice, (newPrice) => {
+  form.value.price = newPrice;  // 如果 currentPrice 变化了，更新 form.price
+});
 
 const relatedProducts = ref([
   {
@@ -230,12 +216,16 @@ const relatedProducts = ref([
   }
 ])
 
-const goToPlatform = (url) => {
-  window.open(url, '_blank')
-}
 
 const addToPriceAlert = () => {
-  // 实现添加价格提醒的逻辑
+  console.log(loginStore.isLogin);
+  console.log('user ID', loginStore.userId)
+  if (loginStore.isLogin) {
+    showDialog.value = true;
+  } else {
+    // 未登录，跳转到登录页面
+    router.push({ path: '/auth', query: {mode : 'login'} });
+  }
   console.log('添加价格提醒')
 }
 </script>
@@ -246,10 +236,17 @@ const addToPriceAlert = () => {
   padding: 20px;
 }
 
-.bread-box{
+.bread-box {
   padding: 10px 20px;
   margin-bottom: 20px;
 }
+
+.product-image {
+  width: 400px;
+  height: 400px;
+
+}
+
 .product-card {
   background-color: white;
   border-radius: 8px;
@@ -340,4 +337,23 @@ const addToPriceAlert = () => {
 .line-through {
   text-decoration: line-through;
 }
+
+.alert-form{
+  width: 300px;
+
+}
+
+/* .title-link {
+  text-decoration: none; 
+}
+
+.title {
+  color: black; 
+  transition: color 0.3s; 
+}
+
+.title-link:hover .title {
+  color: red; 
+  cursor: pointer;
+} */
 </style>

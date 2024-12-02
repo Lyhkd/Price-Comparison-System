@@ -86,3 +86,4 @@ def LoginInfo(username):
 @api.route('/user/logout', methods=['GET'])
 def logout():
     return jsonify({'code': 0, 'message': 'Logout success', 'data': {}}), 200
+
