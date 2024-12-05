@@ -5,7 +5,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from controllers.user_controller import *
 from functools import wraps
-from config import Config
+from app.config import Config
+
 
 @api.route('/user/signup', methods=['POST'])
 # 用户注册

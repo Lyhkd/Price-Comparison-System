@@ -1,37 +1,15 @@
-from flask import Flask
-from flask_cors import CORS
-from config import Config
-# from routes import api
-from models import *
-from models.price_alert import PriceAlert, AlertHistory
 
-from controllers.platform_controller import create_platform
-from routes import *
-from sqlalchemy import text
+import os
+project_root = os.path.abspath(os.path.dirname(__file__))
+os.environ['PROJECT_ROOT'] = project_root
 
-init = False
+from app import create_app, celery
+from celery import Celery
 
-def db_init(app):
-    with app.app_context():
-        db.drop_all()
-        db.create_all()  # 数据库初始化
-        # db.session.execute(text('CREATE FULLTEXT INDEX idx_title ON items(search_title);'))
-        db.session.execute(text('ALTER TABLE items ADD FULLTEXT INDEX ngram_index (title) WITH PARSER ngram;'))
-
-    print('Database initialized')
-
-app = Flask(__name__)
-app.config.from_object(Config) # 加载配置
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:5173"}})
-
-# 初始化数据库
-db.init_app(app)
-# 注册蓝图
-app.register_blueprint(api)  # /api/search, /api/login
+app = create_app(db_init=False, register_celery_blueprint=True)
 
 if __name__ == '__main__':
-    if init:
-        db_init(app)
     for rule in app.url_map.iter_rules():
         print(rule)
     app.run(debug=True)
+    

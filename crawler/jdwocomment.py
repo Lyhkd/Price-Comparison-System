@@ -105,10 +105,12 @@ class Content(AbstractWebPage):
             res = self.sess.get(url)
             res.encoding = 'utf-8'
             res = res.text
-            # with open("good_info.html", 'w', encoding='utf-8') as f:
-            #     f.write(res)
+            
             soup = BeautifulSoup(res, 'html.parser').select('#J_goodsList > ul')
             while (len(soup) == 0):
+                with open("good_info.html", 'w', encoding='utf-8') as f:
+                    f.write(res)
+                print("retry")
                 sleep(10)
                 soup = BeautifulSoup(res, 'html.parser').select('#J_goodsList > ul')
             # 定位搜索结果主体，并获取所有的商品的标签
@@ -179,5 +181,5 @@ if __name__ == "__main__":
     content_page = Content(cookie_str, '手机', 3)
     content_page.print()
 
-    # content_page.get_item_info_xslx()
-    content_page.get_detail()
+    content_page.get_item_info_xslx()
+    # content_page.get_detail()

@@ -2,7 +2,7 @@ from models import db
 from models.item import Item
 from controllers.platform_controller import get_platform_id, get_platform_name
 from utils.crawler import Crawler
-from config import Cookie
+from app.config import Cookie
 from datetime import datetime, timezone
 import jieba
 from sqlalchemy import text
