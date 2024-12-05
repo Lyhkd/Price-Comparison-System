@@ -1,10 +1,11 @@
 from utils.auth import generate_token
 from . import api  # 从 __init__.py 导入 'search' Blueprint
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from controllers.alert_controller import *
 from controllers.item_controller  import *
 from controllers.price_controller import *
-
+from app.config import Config
+from flask_mail import Message, Mail
 
 @api.route('/alert', methods=['POST'])
 def add_alert():
@@ -68,7 +69,7 @@ def query_alert_history(alertid):
         })
     return jsonify({"code":0, "message": "查询成功", "data":data}), 200
 
-@api.route('/alert/<int:alert_id>', methods=['DELETE'])
+@api.route('/alert/<alert_id>', methods=['DELETE'])
 def delete_alert(alert_id):
     alert = query_alert(alert_id=alert_id)
     if not alert:
@@ -76,3 +77,13 @@ def delete_alert(alert_id):
     db.session.delete(alert)
     db.session.commit()
     return jsonify({"code": 0, "message": "Alert deleted successfully", "data":''}), 200
+
+
+@api.route('/alert/sendemail', methods=['POST'])
+def send_email():
+    data = request.get_json()
+    message = Message(data['title'], recipients=[data['email']], sender=Config.MAIL_USERNAME, body=data['content'])
+    with current_app.app_context():
+        mail = Mail()
+        mail.send(message)
+    return jsonify({"code":0, "message": "发送成功", "data":""}), 200

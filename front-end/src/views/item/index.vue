@@ -176,6 +176,7 @@ const handleSubmit = async () => {
   }
   await store.addAlert(data);
   console.log(form.value);
+  showDialog.value = false;
 };
 
 const showDialog = ref(false); // 控制对话框显示

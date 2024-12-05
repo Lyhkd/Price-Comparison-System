@@ -2,7 +2,7 @@ from . import api  # 从 __init__.py 导入 'search' Blueprint
 from flask import jsonify, request
 from controllers import search_items_indb_pagination, search_items_from_websites, get_random_items
 from threading import Thread
-import time
+
 # 商品价格查询
 # @api.route('/test/<id>', methods=['GET'])
 # def test_f(id):

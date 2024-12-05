@@ -21,3 +21,14 @@ def fetch_price(url):
 @celery.task(name='simple/add2')
 def add2(x, y):
     return x + y
+
+@celery.task(name="send_mail")
+def send_mail(to, subject, content):
+    """
+    发送邮件的示例任务
+    """
+    message = Message("标题", sender=app.config["MAIL_USERNAME"], recipients=["****@qq.com"])
+    message.body = "内容"
+    mail.send(message)
+
+    return "发送成功"
