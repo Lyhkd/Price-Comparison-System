@@ -38,7 +38,7 @@
                 <n-space align="center">
                   <n-text class="price-label">价格</n-text>
                   <n-text class="current-price">¥{{ store.itemData.currentPrice }}</n-text>
-                  <n-tag  type="error" size="small">
+                  <n-tag type="error" size="small">
                     特价
                   </n-tag>
                 </n-space>
@@ -68,7 +68,7 @@
               </template>
               添加价格提醒
             </n-button>
-            
+
           </n-space>
 
         </n-col>
@@ -76,21 +76,21 @@
       <!-- 左侧图片展示区 -->
 
       <n-modal v-model:show="showDialog" title="设置价格提醒" preset="card" style="width: 400px; max-width: 90%;">
-              <n-form ref="priceForm" :model="form" label-placement="left" class="alert-form">
-                <n-form-item label="价格" path="price">
-                  <n-input-number v-model:value="form.price" placeholder="请输入希望的价格" />
-                </n-form-item>
-                <n-form-item label="提醒方式" path="method">
-                  <n-select v-model:value="form.method" :options="methods" placeholder="请选择提醒方式" />
-                </n-form-item>
-              </n-form>
-              <template #action>
-                <n-space justify="end">
-                  <n-button @click="showDialog = false">取消</n-button>
-                  <n-button type="primary" @click="handleSubmit">确定</n-button>
-                </n-space>
-              </template>
-            </n-modal>
+        <n-form ref="priceForm" :model="form" label-placement="left" class="alert-form">
+          <n-form-item label="价格" path="price">
+            <n-input-number v-model:value="form.price" placeholder="请输入希望的价格" />
+          </n-form-item>
+          <n-form-item label="提醒方式" path="method">
+            <n-select v-model:value="form.method" :options="methods" placeholder="请选择提醒方式" />
+          </n-form-item>
+        </n-form>
+        <template #action>
+          <n-space justify="end">
+            <n-button @click="showDialog = false">取消</n-button>
+            <n-button type="primary" @click="handleSubmit">确定</n-button>
+          </n-space>
+        </template>
+      </n-modal>
       <!-- 右侧商品信息区 -->
 
       <!-- 历史价格走势图 -->
@@ -225,7 +225,7 @@ const addToPriceAlert = () => {
     showDialog.value = true;
   } else {
     // 未登录，跳转到登录页面
-    router.push({ path: '/auth', query: {mode : 'login'} });
+    router.push({ path: '/auth', query: { mode: 'login' } });
   }
   console.log('添加价格提醒')
 }
@@ -339,7 +339,7 @@ const addToPriceAlert = () => {
   text-decoration: line-through;
 }
 
-.alert-form{
+.alert-form {
   width: 300px;
 
 }

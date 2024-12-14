@@ -34,7 +34,7 @@ export const postUserSignup = (params: RegisterInfo) => http.post('/user/signup'
 export const postUserLogin = (params: LoginData) => http.post<LoginResponse>('/user/login', params)
 export const getUserLoginInfo = () => http.get<LoginInfo>('/user/auth/loginInfo')
 export const logoutUserInfo = () => http.get('/user/logout')
-
+export const updateUserInfo = (data: any) => http.put('/user/auth/loginInfo', data)
 //request({ url: `/user/logout`, method: 'get' })
 
 //pay

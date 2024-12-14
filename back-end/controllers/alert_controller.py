@@ -40,6 +40,7 @@ def query_alert(user_id=None, item_id=None, alert_id=None):
         alerts = PriceAlert.query.filter_by(item_id=item_id).all()
         return alerts
     return None
+
 def add_alert_history(data):
     # data {
     #     alert_id: int,
@@ -48,10 +49,10 @@ def add_alert_history(data):
     #     notification_status: dict
     # }
     alert_id = data.get('alert_id')
-    price_before = data.get('price_before')
+    # price_before = data.get('price_before')
     price_after = data.get('price_after')
-    notification_status = data.get('notification_status')
-    history = AlertHistory(alert_id=alert_id, price_before=price_before, price_after=price_after, notification_status=notification_status)
+    # notification_status = data.get('notification_status')
+    history = AlertHistory(alert_id=alert_id, price_after=price_after)
     db.session.add(history)
     db.session.commit()
     
@@ -59,3 +60,17 @@ def add_alert_history(data):
 def query_history(alert_id):
     histories = AlertHistory.query.filter_by(alert_id=alert_id).all()
     return histories
+
+def get_alert_history(alert_id):
+    histories = AlertHistory.query.filter_by(alert_id=alert_id).all()
+    data = []
+    for history in histories:
+        data.append({
+            "id": history.id,
+            # "priceBefore": history.price_before,
+            "priceAfter": history.price_after,
+            # "notificationStatus": history.notification_status,
+            "createAt": history.created_at.isoformat()
+        })
+    print(data)
+    return data

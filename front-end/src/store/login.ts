@@ -7,6 +7,7 @@ import {
   getUserLoginInfo,
   postUserLogin,
   logoutUserInfo,
+  updateUserInfo
 } from '@/api'
 
 import {
@@ -16,6 +17,7 @@ import {
 } from '@/libs/token'
 
 import { LoginInfo }  from '@/types/login'
+import user from '@/mock/user'
 
 //1定义并导出容器，容器ID必须唯一
 export const useLoginStore = defineStore('useLoginStore', {
@@ -29,7 +31,8 @@ export const useLoginStore = defineStore('useLoginStore', {
     userDisplayName: (state) => state.loginInfo?.username,
     userAvatar: (state) => state.loginInfo?.avatar,
     userId: (state) => state.loginInfo?.uid,
-
+    userEmail: (state) => state.loginInfo?.email,
+    userPhone: (state) => state.loginInfo?.phone,
   },
   
   //不能使用箭头函数定义actions,因为箭头函数绑定外部this
@@ -68,6 +71,14 @@ export const useLoginStore = defineStore('useLoginStore', {
       this.loginInfo = undefined
       this.isLogin = false
     },
+    async updateUser(data: any) {
+      const info = (await updateUserInfo(data))
+      if (this.loginInfo!==undefined){
+        this.loginInfo.email = info.email
+        this.loginInfo.username = info.username
+        this.loginInfo.phone = info.phone
+      }
+    }
 
   },
 

@@ -40,8 +40,9 @@ export default {
       }, maxPriceItems[0]);
       const minPriceItem = minPriceItems.reduce((latest, item) => {
         return new Date(item.date) > new Date(latest.date) ? item : latest;
-      }, maxPriceItems[0]);
+      }, minPriceItems[0]);
 
+      console.log("max", maxPriceItem, maxPriceItems, "min", minPriceItem, minPriceItems);
       // const minPriceItem = data.find(item => Math.abs(item.price - minPrice) < epsilon);
 
       const maxPriceDate = maxPriceItem ? maxPriceItem.date : '未知';

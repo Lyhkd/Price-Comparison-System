@@ -79,14 +79,19 @@ class Crawler(object):
             sleep(1)
         # 返回商品字典列表
         return item_list
+    def get_price(self, sku):
+        url = f"https://p.3.cn/prices/mgets?skuIds=J_{sku}"
     
     def get_detail(self, sku=None):
         commit_start_url = f'https://item.jd.com/{sku}.html'
         # 发送请求，得到结果
         res = self.sess.get(commit_start_url)
-        price = BeautifulSoup(res.text, 'html.parser').select('[class=price]')
-        paras = BeautifulSoup(res.text, 'html.parser').select('[class=p-parameter]')
-        pics = BeautifulSoup(res.text, 'html.parser').select('[class=spec-items]')
+        bs = BeautifulSoup(res.text, 'html.parser')
+        # price = bs.select('[classp=p-price]')
+        # print("try to get detail")
+        # print(price)
+        paras = bs.select('[class=p-parameter]')
+        pics = bs.select('[class=spec-items]')
         pictures = pics[0].select('img')
         parameters = paras[0].select('li')
         # brand = soup[0].select('li')[0].get('title')
@@ -96,7 +101,6 @@ class Crawler(object):
         attr['img_list'] = ""
         for pic in pictures:
             attr['img_list'] += pic.get('src')+";"
-        # print(attr)
         return attr
     
     def get_detail_string(self, sku):
@@ -104,9 +108,10 @@ class Crawler(object):
         if len(attrs.keys()) == 0:
             return None
         # print(attrs)
-        results = ''
+        results = '' # attrs是一个dict，stringfy之后返回
         for (key, value) in attrs.items():
-            results += key+':'+value+'\n'
+            if value is not None and key != '店铺':
+                results += key+':'+value+'\n'
         return results
 
     def read_good_info_xlsx(self, file_path):
@@ -145,7 +150,7 @@ class Crawler(object):
         return item_list
 
 
-    def to_json(self):
+    def get_item_info_json(self):
         return json.dumps(self.get_item_info_dict(), ensure_ascii=False)
 
 if __name__ == "__main__":

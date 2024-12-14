@@ -1,7 +1,7 @@
 import requests, json
 from bs4 import BeautifulSoup
 import openpyxl
-from time import sleep
+from time import sleep, time
 
 
 # 基类，后续可以在此之上扩展
@@ -166,7 +166,14 @@ class Content(AbstractWebPage):
 
         # 保存Excel文件
         wb.save("good_info2.xlsx")
-
+    def get_price(self, sku=None):
+        sku = 100149996442
+        t = int(time() * 1000)
+        url = f"https://api.m.jd.com/?appid=pc-item-soa&functionId=pc_detailpage_wareBusiness&client=pc&clientVersion=1.0.0&t={t}&body=%7B%22skuId%22%3A{sku}%2C%22"
+        url2 = "https://api.m.jd.com/?appid=item-v3&functionId=pctradesoa_recommend&client=pc&clientVersion=1.0.0&t=1733407154469&body=%7B%22methods%22%3A%22accessories%22%2C%22p%22%3A103003%2C%22sku%22%3A100157830530%2C%22cat%22%3A%229987%2C653%2C655%22%2C%22lid%22%3A15%2C%22ck%22%3A%22pin%2CipLocation%2Catw%2Caview%22%2C%22lim%22%3A5%7D&h5st=20241205215914473%3Bhfhhfh55ez1ri4l8%3Bfb5df%3Btk03w19c6198818n3WPQ1813DV30h194DFp-kR9DBPZ3afZ3P_CQ9ZW1R4eEfWd3fqNDio1h5mz4cN93PaZjOr6mK23v%3B62c53cda2185dce0c0cc778823616bb9f93bdde2b1855d2f9298b36377fa1fea%3B4.9%3B1733407154473%3BpjbMhjpd9nIg7jpjxjZf2iFjLrJp-jpd-aYR5mINGWYeDSlRDSlRJrJdJrESJrpjh7pdLDIj9e1TJrpjh7Jjyf4fybldJeVe1ToeKalS2HodJSFf1fVe6PIS1rof7rIjLDIj7SnQEiVS0ipjLDrgJjIeFele2X4T6bYe1flf6PYfFiVS7r4T4H4fyblf5fYfJrJdJfUT1yVTIipjLDrgJTIgyzpe1uWS-GFSMWoRJrJdJTEjLrJp-jJOVWoWKemRyPFSnOHjLDIj_ulS9mFPJrpjh7Jj-WlO9G3TK2HjLDIjFqEjLrJp-3kjLDrfLDIjzXETJrpjLrJp-jJjLDIj0XETJrpjLrJp-roeLDIj1XETJrpjLrJp-rojxjZe2iFjLrpjLDrg7rJdJbYOJipjLrpjh7pdzrJdJfYOJipjLrpjh7Jf_rJdJjYOJipjLrpjh7JjyzZf9rIjLDIj6XETJrpjLrJp-rojxj5R0ipjLrpjh7ZeLDIj46FjLrpjLDrg7rJdJ7FjLrpjLDrg7rJdJb1OJrpjLrJpwqJdJbFQGakNGipjLDrguqpjhjpd0bldKGYfzbFfHWleMaFRJrJdJjoPJrpjLrJpwqJdJrkPJrpjh7Jj0vWe6vmf6rpVLf2YLfVTeqpQGaEQiq5dDe0Q3yVRImVYJrJdJnVO4ipjLD7N%3B10ecfb030f8ed17c8137e619da20f322af0529043f9b36326818a0c2984c828b&x-api-eid-token=jdd03GJYSIMOVXIATBNQOODKDRW2DUP4M6SDWMNMFN5K6RLNHJJULLACJORLTT3PRAH6X53EYTH5FAA4EJTV3NPRL25FRNEAAAAMTS4PBVHYAAAAAC45TEH2NLOQJTQX&loginType=3&uuid=181111935.17310522299991312897114.1731052229.1733393844.1733405264.19"
+        res = self.sess.get(url2)
+        res.encoding = 'utf-8'
+        print(res.text)
 if __name__ == "__main__":
     # cookie，用于验证登录状态，必须要有cookie，否则京东会提示网络繁忙请重试
     # 获取方法：使用浏览器登录过后按F12，点击弹出界面中最上方的network选项，name栏里面随便点开一个，拉到最下面就有cookie，复制到cookie.txt中
@@ -183,3 +190,6 @@ if __name__ == "__main__":
 
     content_page.get_item_info_xslx()
     # content_page.get_detail()
+    # content_page.get_price()
+
+

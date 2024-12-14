@@ -16,7 +16,7 @@
                                     <h3>提醒历史</h3><br />
                                     <n-timeline :reverse="true">
                                         <n-timeline-item v-for="(alertHist, index) in validAlertHistory(alert.alertHistory).slice(-3)"
-                                            :key="index" :title="generateTitle(alertHist)" :time="alertHist.createdAt">
+                                            :key="index" :title="generateTitle(alertHist)" :time="generateTime(alertHist.createAt)">
                                         </n-timeline-item>
                                     </n-timeline>
                                 </div>
@@ -34,7 +34,7 @@
                                         <span>提醒方式：</span>
                                         <n-radio-group v-model:value="alert.notificationMethod" @change="Update(alert)">
                                                 <n-radio-button value="email" label="邮箱" />
-                                                <n-radio-button value="sms" label="短信" />
+                                                <n-radio-button :disabled="!isSmsEnabled" value="sms" label="短信" />
                                         </n-radio-group>
                                         <span>开启提醒：<n-switch v-model:value="alert.enable" @change="Update(alert)"/></span>
                                         <n-space >
@@ -100,13 +100,26 @@ import { useAlertStore } from '@/store/alerts';
 const loginStore = useLoginStore();
 const alertStore = useAlertStore();
 const router = useRouter();
+const generateTime = (time) => {
+    console.log(`UTC Time: ${time}`);
+    const utcDate = new Date(time);  // 转为 JS 日期对象
+    const localDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);  // 转换为北京时间
+    const formattedDate = localDate.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+    console.log(`Local Time: ${formattedDate}`);
+    return formattedDate;
+};
 const generateTitle = (alertHist) => {
-  const status = alertHist.notificationStatus === 'sent' ? '已提醒' : '未提醒';
-  return `${status}：价格从 ${alertHist.priceBefore} 降到了 ${alertHist.priceAfter}`;
+//   const status = alertHist.notificationStatus === 'sent' ? '已提醒' : '未提醒';
+  return `价格提醒 ${alertHist.priceAfter} 元`;
 };
 const validAlertHistory = (alertHistory) => {
   return Array.isArray(alertHistory) ? alertHistory : [];
 };
+
+const isSmsEnabled = computed(() => {
+  return loginStore.loginInfo?.phone !== null && loginStore.loginInfo?.phone !== '';
+});
+
 onMounted(async () => {
         try {
             await alertStore.fetchAlerts(loginStore.userId);

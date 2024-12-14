@@ -53,8 +53,6 @@ def search_items():
 
 from controllers.item_controller import *
 from controllers.price_controller import *
-import time
-import json
 @api.route('/item/<id>', methods=['GET'])
 def item_details(id):
     print("receive request for item details")

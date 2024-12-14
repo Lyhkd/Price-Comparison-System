@@ -47,6 +47,15 @@ def add_price_history(data):
     
     
 def add_item_price_history(item):
+    # print("add_item_price_history item id", item.id, item.current_price)
+    last = PriceHistory.query.filter_by(item_id=item.id, platform_id=item.platform_id).first()
+    if last is not None: # 如果已经有记录，且最近一次更新时间在一天内，且价格没有变化，则不添加
+        last_update_time = last.date
+        last_price = last.price
+        if last_update_time is not None:
+            if (datetime.now() - last_update_time).days < 1 and item.current_price == last_price:
+                print("no need to update price history")
+                return
     price_history = PriceHistory(item_id=item.id, platform_id=item.platform_id, price=item.current_price)
     db.session.add(price_history)
     db.session.commit()

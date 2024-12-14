@@ -29,8 +29,15 @@ export default {
       const maxPrice = Math.max(...prices);
       const minPrice = Math.min(...prices);
       const epsilon = 1e-6; // 容忍误差范围
-      const maxPriceItem = data.find(item => Math.abs(item.price - maxPrice) < epsilon);
-      const minPriceItem = data.find(item => Math.abs(item.price - minPrice) < epsilon);
+      const maxPriceItems = data.filter(item => Math.abs(item.price - maxPrice) < epsilon);
+      const minPriceItems = data.filter(item => Math.abs(item.price - minPrice) < epsilon);
+      // 选择日期最大的项
+      const maxPriceItem = maxPriceItems.reduce((latest, item) => {
+        return new Date(item.date) > new Date(latest.date) ? item : latest;
+      }, maxPriceItems[0]);
+      const minPriceItem = minPriceItems.reduce((latest, item) => {
+        return new Date(item.date) > new Date(latest.date) ? item : latest;
+      }, maxPriceItems[0]);
 
       const maxPriceDate = maxPriceItem ? maxPriceItem.date : '未知';
       const minPriceDate = minPriceItem ? minPriceItem.date : '未知';
@@ -112,8 +119,7 @@ export default {
                 type: 'max',
                 name: '最高价格',
                 value: maxPrice,
-                xAxis: maxPriceDate,
-                yAxis: maxPrice,
+                coord: [maxPriceDate, maxPrice],
                 label: {
                   show: true,
                   position: 'top',
@@ -129,8 +135,7 @@ export default {
                 type: 'min',
                 name: '最低价格',
                 value: minPrice,
-                xAxis: minPriceDate,
-                yAxis: minPrice,
+                coord: [minPriceDate, minPrice],
                 label: {
                   show: true,
                   position: 'bottom',

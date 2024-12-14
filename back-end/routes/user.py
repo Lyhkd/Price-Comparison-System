@@ -69,19 +69,49 @@ def token_required(f):
         except jwt.ExpiredSignatureError:
             return jsonify({'message': 'Token has expired!'}), 401
         except jwt.InvalidTokenError:
+            print(token)
             return jsonify({'message': 'Invalid token!'}), 401
         return f(data['username'], *args, **kwargs)
     return decorated_function
 
 
+@api.route('/user/auth/loginInfo', methods=['PUT'])
+@token_required
+def updateLoginInfo(username):
+    data = request.get_json()
+    print(data)
+    new_username = data['username'] if 'username' in data else None
+    new_email = data['email'] if 'email' in data else None
+    new_phone = data['phone'] if 'phone' in data else None
+    info = user_check(username)
+    if info:
+        if new_username:
+            info.username = new_username
+        if new_email:
+            info.email = new_email
+        if new_phone:
+            info.phone = new_phone
+        
+        try:
+            db.session.commit()
+            return jsonify({'code': 0, 'message': 'User info updated successfully', 'data': {
+                'username': info.username,
+                'email': info.email,
+                'phone': info.phone
+            }}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'code': 1, 'message': f'Failed to update user info: {str(e)}', 'data': {}}), 500
+
+    return jsonify({'code': 1, 'message': 'User not found', 'data': {}}), 404
+
 @api.route('/user/auth/loginInfo', methods=['GET'])
 @token_required
-def LoginInfo(username):
+def getLoginInfo(username):
     info = get_login_info(username)
     if info:
         return jsonify({'code': 0, 'message': 'Success', 'data': info}), 200
     return jsonify({'code': 1, 'message': 'User not found', 'data': {}}), 404
-
 
 # 用户注销
 @api.route('/user/logout', methods=['GET'])

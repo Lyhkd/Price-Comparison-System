@@ -31,6 +31,9 @@ def get_item_details(item_id):
         return None
     if item.description is None:
         item.description = crawler.get_detail_string(item.sku)
+        # item.current_price = attrs['price']
+        # item.update_time = datetime.now(timezone.utc)
+        # add_item_price_history(item)
         db.session.commit()
     results = {
         'title': item.title,
@@ -51,7 +54,7 @@ def segment_text(text):
 def is_sku_exists(sku):
     return db.session.query(Item).filter_by(sku=sku, platform_id=get_platform_id('JD')).first() is not None
 
-def update_item(sku, price, keyword):
+def update_item(sku, price, keyword=''):
     item = db.session.query(Item).filter_by(sku=sku).first()
     item.current_price = price
     item.search_title = (keyword+' '+item.search_title)[:255]
@@ -166,3 +169,28 @@ def search_items_from_websites(keyword, page_begin=1, page_end=1):
         print('Error:', e, ' Searching items from database')
         
     print(f"get {len(results)} items from websites for keyword {keyword}")
+
+def update_item_price_from_websites(item_id):
+    item = db.session.query(Item).filter_by(id=item_id).first()
+    results = []
+    try: # 爬虫抓取数据
+        crawler.update_search(item.search_title)
+        results = crawler.get_item_info_dict()
+        from run import app
+        with app.app_context():
+            for result in results:
+                match = re.match(r"^\d+(\.\d+)?", result.get('price'))
+                if match:
+                    result['price'] = float(match.group())
+                else:
+                    print(f"skip item with {result.get('price')}")
+                
+                if is_sku_exists(result['sku']):
+                    print("find target item and update price ", result['price'])
+                    update_item(result['sku'], result['price'])
+                else:
+                    add_item(result)
+                    # 添加到数据库
+    
+    except Exception as e: # 爬虫出错，从数据库中查找
+        print('Error:', e, ' Searching items from database')

@@ -7,6 +7,7 @@ from routes import api
 from sqlalchemy import text
 from celery import Celery
 from app import celeryconfig
+from flask_mail import Mail
 
 
 
@@ -23,6 +24,8 @@ def create_app(celery=None,db_init=False,register_celery_blueprint=False):
     app = Flask(__name__)
     app.config.from_object(Config)
     db.init_app(app)
+    mail = Mail()
+    mail.init_app(app)
     CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:5173"}})
     if celery:
         register_celery(celery=celery, app=app)  # >> 注册celery

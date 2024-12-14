@@ -22,7 +22,7 @@ def query_alerts(uid):
     data = []
     for alert in alerts:
         details = get_item_details(alert.item_id)
-        histories = query_history(alert.id)
+        histories = get_alert_history(alert.id)
         price_hist = get_price_history(alert.item_id)
         data.append({
             "id": alert.id,
@@ -87,3 +87,9 @@ def send_email():
         mail = Mail()
         mail.send(message)
     return jsonify({"code":0, "message": "发送成功", "data":""}), 200
+
+from twilio.rest import Client
+@api.route('/alert/sendsms', methods=['GET'])
+def send_sms():
+    Client(Config.TWILIO_ACCOUNT_SID, Config.TWILIO_AUTH_TOKEN)
+    

@@ -5,8 +5,8 @@
     </template>
     <div class="user-info">
       <p><strong>用户名：</strong>{{ loginStore.userDisplayName }}</p>
-      <p><strong>邮箱：</strong>{{ loginStore.loginInfo.email }}</p>
-      <p><strong>提醒设置：</strong>{{ userInfo.alertMethod }}</p>
+      <p><strong>邮箱：</strong>{{ loginStore.userEmail }}</p>
+      <p :v-if="loginStore.userPhone"><strong>手机：</strong>{{ loginStore.userPhone }}</p>
     </div>
   </n-card>
 </template>

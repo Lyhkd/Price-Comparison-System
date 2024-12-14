@@ -36,7 +36,15 @@ def get_login_info(username):
         "uid": user.id,
         "username": user.username,
         "email": user.email,
+        "phone": user.phone,
         "avatar": user.avatar
     }
     return info
-    
+
+def get_user_email(uid):
+    user = User.query.get(uid)
+    return user.email
+
+def get_user_phone(uid):
+    user = User.query.get(uid)
+    return user.phone

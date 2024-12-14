@@ -1,1 +1,0 @@
-attr['img_plus'] = ""

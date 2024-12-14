@@ -3,6 +3,7 @@ export interface LoginInfo {
   username: string,
   password: string,
   email: string,
+  phone: string,
   avatar: string,
   isLogin: boolean,
 }

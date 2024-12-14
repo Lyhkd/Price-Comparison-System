@@ -56,10 +56,32 @@
       </div>
     </n-layout-sider>
   </n-layout>
+
+  <n-modal v-model:show="showSettingsModal" title="用户设置" preset="card" style="width: 500px;">
+    <n-form :model="settingsForm" :rules="rules" class="setting-form">
+      <n-form-item label="用户名" path="username">
+        <n-input v-model:value="settingsForm.username" />
+      </n-form-item>
+      <n-form-item label="邮箱" path="email">
+        <n-input v-model:value="settingsForm.email" />
+      </n-form-item>
+      <n-form-item label="手机号" path="phone">
+        <n-input v-model:value="settingsForm.phone" />
+      </n-form-item>
+    </n-form>
+    <template #action>
+      <n-space justify="end">
+      <n-button @click="showSettingsModal = false">取消</n-button>
+      <n-button type="primary" @click="saveSettings">保存</n-button>
+    </n-space>
+    </template>
+  </n-modal>
+
 </template>
 
 <script lang="ts">
 import { defineComponent, h, ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
+import type { FormRules } from "naive-ui";
 import { NIcon } from "naive-ui";
 import type { MenuOption } from "naive-ui";
 import { RouterLink, useRouter, useRoute } from "vue-router";
@@ -84,7 +106,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const router = useRouter();
     const route = useRoute();
-    const userStore = useUserStore();
+    // const userStore = useUserStore();
     const loginStore = useLoginStore();
     const searchStore = useSearchStore(); 
     // 用于渲染图标
@@ -94,6 +116,40 @@ export default defineComponent({
 
 
     // 搜索处理
+    const showSettingsModal = ref(false);
+    const settingsForm = ref({
+      username: loginStore.userDisplayName,
+      email: loginStore.loginInfo?.email,
+      phone: loginStore.loginInfo?.phone,
+    });
+
+    const rules: FormRules = {
+  username: [
+    { required: true, message: '用户名不能为空', trigger: 'blur' },
+    { min: 6, message: '用户名长度必须大于6个字符', trigger: 'blur' }
+  ],
+  email: [
+    { required: true, message: '邮箱不能为空', trigger: 'blur' },
+    { type: 'email', message: '邮箱格式不正确', trigger: ['blur', 'input'] }
+  ],
+  phone: [
+    { required: false, message: '手机号不能为空', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: ['blur', 'input'] }
+  ]
+};
+
+    const saveSettings = () => {
+      // 保存用户设置逻辑
+      
+      const data = {
+        "username": settingsForm.value.username,
+        "email": settingsForm.value.email,
+        "phone": settingsForm.value.phone,
+      }
+      loginStore.updateUser(data);
+      showSettingsModal.value = false;
+    };
+
 
     const searchInput = ref<string>('')
     const isSearchHidden = ref<boolean>(false);
@@ -153,7 +209,7 @@ export default defineComponent({
     const avatarSelect = (key: any) => {
       switch (key) {
         case 1:
-          router.push({ name: "Setting" });
+          showSettingsModal.value = true;
           break;
         case 2:
           loginStore.logout();
@@ -233,6 +289,10 @@ export default defineComponent({
       onClickLogin,
       goToAuth,
       currentRoute,
+      showSettingsModal,
+      settingsForm,
+      saveSettings,
+      rules
     };
   },
 });
@@ -315,6 +375,10 @@ export default defineComponent({
   .search-box {
     display: none;
   }
+}
+
+.setting-form {
+  width: 300px;
 }
 
 /* Logo样式 */
