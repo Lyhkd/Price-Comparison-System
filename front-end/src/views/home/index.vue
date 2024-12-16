@@ -8,11 +8,11 @@
             <SearchBar :width="500" placeholder="搜索商品..." @search="handleSearch" />
         </div>
         <!-- 商品卡片列表 -->
-        <div class="product-list" v-if="loginStore.isLogin">
+        <!-- <div class="product-list" v-if="loginStore.isLogin">
             <ProductCard v-for="item in products" :key="item.id" :product="item" />
-        </div>
+        </div> -->
         <!-- 今日特价 -->
-        <div class="empty-box" v-else>
+        <div class="empty-box" >
         </div>
     </div>
 </template>

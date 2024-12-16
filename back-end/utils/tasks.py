@@ -5,11 +5,12 @@ from flask_mail import Message, Mail
 from flask import current_app
 from app import Config
 from controllers.user_controller import get_user_email, user_check, get_user_phone
-from controllers.item_controller import get_item_details
+from controllers.item_controller import get_item_details, update_item_price_from_websites
 from controllers.alert_controller import add_alert_history, query_alert
 from twilio.rest import Client  # 导入 Twilio 客户端
 import urllib
 import urllib.request
+import asyncio
 
 @celery.task(name='simple/add2')
 def add2(x, y):
@@ -23,7 +24,8 @@ def check_price():
         for alert in alerts:
             if alert.enable is False:
                 continue
-            current_price = get_item_details(alert.item_id)['current_price']  # 调用爬取价格的逻辑
+            current_price = update_item_price_from_websites(alert.item_id)  # 调用爬取价格的逻辑
+            # current_price = get_item_details(alert.item_id)['current_price']  # 调用爬取价格的逻辑
             print(f"Checking price for product {alert.item_id}, current price: {current_price}, target price: {alert.target_price}")
             if current_price <= alert.target_price:
                 print(f"Price for product {alert.item_id} is lower than target price, sending notification...")

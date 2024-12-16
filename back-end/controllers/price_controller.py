@@ -54,8 +54,9 @@ def add_item_price_history(item):
         last_price = last.price
         if last_update_time is not None:
             if (datetime.now() - last_update_time).days < 1 and item.current_price == last_price:
-                print("no need to update price history")
+                # print("no need to update price history")
                 return
     price_history = PriceHistory(item_id=item.id, platform_id=item.platform_id, price=item.current_price)
+    print("add item price history", item.id, item.current_price)
     db.session.add(price_history)
     db.session.commit()

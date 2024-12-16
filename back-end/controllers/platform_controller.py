@@ -23,7 +23,8 @@ def get_platform_url(platform_id):
 def create_platform(platform_name, logo_url=None):
     logo_dict = {
         'JD': "www.jd.com/favicon.ico",
-        'TB': "www.taobao.com/favicon.ico"
+        'TB': "www.taobao.com/favicon.ico",
+        'AMAZON': "www.amazon.com/favicon.ico",
     }
     platform = Platform(name=platform_name, logo_url=logo_dict[platform_name] if logo_url is None else logo_url)
     db.session.add(platform)

@@ -58,7 +58,7 @@ const themeOverrides: GlobalThemeOverrides = {
   Select: {
     peers: {
       InternalSelection: {
-        textColor: '#FF0000'
+        // textColor: '#FF0000'
       }
     }
   }

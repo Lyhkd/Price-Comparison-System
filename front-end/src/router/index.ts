@@ -52,26 +52,6 @@ export const routes = [
     meta: { showFooter: true },
   },
   {
-    name: 'popular',
-    path: '/popular',
-    component: () => import('@/views/popular/Popular.vue'),
-    meta: { showFooter: true },
-  },
-  {
-    name: 'detail',
-    path: '/detail/:id',
-    component: () => import('@/views/detail/Detail.vue'),
-    meta: { showFooter: true },
-
-  },  
-  {
-    name: 'cart',
-    path: '/cart',
-    component: () => import('@/views/cart/Cart.vue'),
-    meta: { showFooter: true },
-
-  },  
-  {
     name: 'login',
     path: '/login',
     component: () => import('@/views/login/index.vue'),

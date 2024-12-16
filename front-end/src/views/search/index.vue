@@ -1,6 +1,11 @@
 <template>
   <div class="container">
     <n-spin :show="loading">
+       <!-- 筛选选项 -->
+       <div class="filters">
+        <n-select v-model:value="selectedPlatform" :options="platformOptions" placeholder="选择平台" style="width: 200px;" />
+        <n-select v-model:value="selectedOrder" :options="orderOptions" placeholder="价格排序" style="width: 200px;" />
+      </div>
       <!-- 商品卡片容器 -->
       <div class="product-list">
         <div class="product-row" v-for="item in searchResults" :key="item.id">
@@ -19,7 +24,7 @@
               </div>
 
               <div class="product-footer">
-                <p class="price">¥{{ item.currentPrice }}</p>
+                <p class="price">¥{{ item.currentPrice==0?"暂无价格":item.currentPrice  }}</p>
                 <a :href="item.shopLink" target="_blank" class="shop-name">{{ item.shopName }}</a>
                 <p class="platform">平台: {{ item.platform }}</p>
 
@@ -35,7 +40,7 @@
         </div>
       </div>
       <n-flex justify="end">
-        <n-pagination v-model:page="curPage" :page-count="pageInfo.totalPages" @change="updatePage" />
+        <n-pagination v-model:page="curPage" :page-count="pageInfo.totalPages"  @update:page="updatePage" />
       </n-flex>
     </n-spin>
   </div>
@@ -58,13 +63,32 @@ export default defineComponent({
     const searchStore = useSearchStore(); // 获取 store 实例
     const route = useRoute(); // 使用 useRoute 获取路由对象
     const router = useRouter();
+    let checkInterval = null; // 定时检查的 interval ID
+
+    const selectedPlatform = ref('all'); // 平台筛选
+    const selectedOrder = ref('default'); // 价格排序
+
+    const platformOptions = [
+      { label: '所有', value: 'all' },
+      { label: '京东', value: 'JD' },
+      { label: '亚马逊', value: 'AMAZON' }
+    ];
+
+    const orderOptions = [
+      { label: '默认排序', value: 'default' },
+      { label: '价格从低到高', value: 'price_asc' },
+      { label: '价格从高到低', value: 'price_desc' }
+    ];
+
     // 自动获取查询参数并触发搜索
     const fetchSearchResults = async () => {
       loading.value = true;
       // 获取查询参数
       const query = route.query;
-      const platform = query.platform ? query.platform.split(',') : []; // 获取平台参数
+      const platform = query.platform || 'all' ; // 获取平台参数
       const keyword = query.keyword || ''; // 获取搜索关键词
+      selectedOrder.value = query.order || 'default'; //
+      selectedPlatform.value = platform;
       const searchParams = {
         "keyword": keyword,
         "order": query.order,
@@ -78,6 +102,16 @@ export default defineComponent({
       await searchStore.updateParam(searchParams);
       loading.value = false;
     };
+
+  const checkLoadingStatus = () => {
+    if (loading.value) {
+        console.log("Loading is still true, retrying...");
+        setTimeout(fetchSearchResults, 5000); // 5秒后重新发出请求
+      } else {
+        clearInterval(checkInterval); // 取消定时检查
+        console.log("Loading is false, stopping interval check.");
+      }
+  };
 
     const updatePage = (page) => {
       curPage.value = page; // 更新当前页码
@@ -100,13 +134,29 @@ export default defineComponent({
       })
     }
 
+    // 监听 selectedPlatform 和 selectedOrder 的变化
+    watch([selectedPlatform, selectedOrder], () => {
+      // 更新路由参数
+      router.push({
+        query: {
+          ...route.query,
+          platform: selectedPlatform.value,
+          order: selectedOrder.value,
+        },
+      }).then(() => {
+        fetchSearchResults(); // 重新触发搜索
+      });
+    });
+
 
     // 从 store 获取商品列表
     const searchResults = computed(() => searchStore.goodsList);
     const pageInfo = computed(() => searchStore.pageInfo);
     const curPage = ref(1);
+
     onMounted(() => {
       fetchSearchResults(); // 页面加载时触发搜索
+      checkInterval = setInterval(checkLoadingStatus, 10000);
     });
 
     return {
@@ -115,7 +165,12 @@ export default defineComponent({
       goToProductPage,
       pageInfo,
       curPage,
-      updatePage
+      updatePage,
+      selectedPlatform,
+      selectedOrder,
+      platformOptions,
+      orderOptions,
+      fetchSearchResults
     };
   }
 });
@@ -136,7 +191,11 @@ export default defineComponent({
     padding: 10px;
   }
 }
-
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
 .product-list {
   width: 1200px;
   display: flex;
