@@ -1,11 +1,14 @@
 <template>
+  <div class="wrapper">
+
+  
   <n-config-provider :locale="zhCN" :date-locale="dateZhCN" :theme-overrides="themeOverrides">
     <n-message-provider>
       <n-dialog-provider>
         <n-notification-provider>
 
           <Header></Header>
-          <router-view>
+          <router-view class="content">
           </router-view>
           <Message></Message>
         </n-notification-provider>
@@ -14,6 +17,7 @@
     <Footer v-show='$route.meta.showFooter'></Footer>
 
   </n-config-provider>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -67,4 +71,17 @@ const themeOverrides: GlobalThemeOverrides = {
 
 </script>
 
-<style scoped></style>
+<style scoped>
+
+/* 整个页面的容器 */
+.wrapper {
+  display: flex;
+  flex-direction: column; /* 垂直排列子元素 */
+  min-height: 100vh;      /* 页面最小高度占满窗口 */
+}
+
+/* 主体内容区域 */
+.content {
+  min-height: calc(100vh - 320px);
+}
+</style>

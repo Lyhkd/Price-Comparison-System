@@ -5,13 +5,8 @@
             <img class="logo-image" src="@/assets/images/home.png" alt="logo"/>
         </div>
         <div class="search-box">
-            <SearchBar :width="500" placeholder="搜索商品..." @search="handleSearch" />
+            <SearchBar :width="searchBarWidth" placeholder="搜索商品..." @search="handleSearch" />
         </div>
-        <!-- 商品卡片列表 -->
-        <!-- <div class="product-list" v-if="loginStore.isLogin">
-            <ProductCard v-for="item in products" :key="item.id" :product="item" />
-        </div> -->
-        <!-- 今日特价 -->
         <div class="empty-box" >
         </div>
     </div>
@@ -20,7 +15,6 @@
 <script setup>
 import useLoginStore from '@/store/login';
 import SearchBar from './search-bar/index.vue';
-import ProductCard from './product-card/index.vue';
 import { defineComponent, h, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -39,20 +33,30 @@ const handleSearch = (searchText) => {
     });
 };
 
-// 假数据示例
-const products = ref([
-    { id: 1, name: '商品1', currentPrice: 99.99, priceHistory: [120, 110, 105, 99.99] },
-    { id: 2, name: '商品2', currentPrice: 199.99, priceHistory: [220, 210, 199.99] },
-    { id: 3, name: '商品3', currentPrice: 299.99, priceHistory: [350, 330, 310, 299.99] },
-]);
+const searchBarWidth = ref(window.innerWidth <= 768 ? 300 : 500);
+
+const updateSearchBarWidth = () => {
+  searchBarWidth.value = window.innerWidth <= 768 ? 300 : 500;
+};
+
+onMounted(() => {
+  window.addEventListener('resize', updateSearchBarWidth);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateSearchBarWidth);
+});
+
 </script>
 
 <style scoped>
 .home-page {
-    padding-top: 100px;
-
-    align-items: center;
-    justify-content: center;
+    display: flex;
+  flex-direction: column; /* 垂直排列子元素 */
+  padding-top: 100px;
+  align-items: center;
+  justify-content: flex-start; /* 从顶部开始排列子元素 */
+  flex-grow: 1; /* 使 home-page 填充剩余空间 */
 
     .logo-box {
         display: flex;
@@ -84,9 +88,26 @@ const products = ref([
 }
 
 .empty-box {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100px;
+    flex-grow: 1;  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;  /* 垂直排列子元素 */
+}
+
+@media (max-width: 768px) {
+
+  .logo-box {
+    margin-bottom: 50px;
+    .logo-image {
+      height: 200px; /* 调整高度以适配移动端 */
+    }
+  }
+
+  .search-box {
+    padding-left: 10px;
+    margin-bottom: 20px;
+  }
+
 }
 </style>

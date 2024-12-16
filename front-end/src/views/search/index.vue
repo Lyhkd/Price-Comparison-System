@@ -5,7 +5,11 @@
        <div class="filters">
         <n-select v-model:value="selectedPlatform" :options="platformOptions" placeholder="选择平台" style="width: 200px;" />
         <n-select v-model:value="selectedOrder" :options="orderOptions" placeholder="价格排序" style="width: 200px;" />
+        
       </div>
+      <n-space class="search-box">
+      <SearchBar :width="searchBarWidth" placeholder="搜索商品" @search="handleSearch" />
+      </n-space>
       <!-- 商品卡片容器 -->
       <div class="product-list">
         <div class="product-row" v-for="item in searchResults" :key="item.id">
@@ -51,12 +55,13 @@ import { defineComponent, ref, onMounted, computed } from 'vue';
 import { NCard, NButton, NSpin } from 'naive-ui';
 import useSearchStore from '@/store/search'; // 导入 store
 import { useRoute, useRouter } from 'vue-router'; // 导入 useRoute
-
+import SearchBar from '@/views/home/search-bar/index.vue';
 export default defineComponent({
   components: {
     NCard,
     NButton,
-    NSpin
+    NSpin,
+    SearchBar
   },
   setup() {
     const loading = ref(false); // 加载状态
@@ -157,7 +162,33 @@ export default defineComponent({
     onMounted(() => {
       fetchSearchResults(); // 页面加载时触发搜索
       checkInterval = setInterval(checkLoadingStatus, 10000);
+      window.addEventListener('resize', updateSearchBarWidth);
     });
+
+    const handleSearch = (searchText) => {
+    router.push({
+        name: 'search',
+        query: {
+            keyword: searchText,
+            order: "default",
+            pageNo: 1,
+            pageSize: 30,
+            platform: "all",
+        },
+    }).then(() => {
+        fetchSearchResults(); // 重新触发搜索
+      });
+};
+
+const searchBarWidth = ref(window.innerWidth <= 768 ? 300 : 500);
+
+const updateSearchBarWidth = () => {
+  searchBarWidth.value = window.innerWidth <= 768 ? 300 : 500;
+};
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateSearchBarWidth);
+});
 
     return {
       loading,
@@ -170,7 +201,10 @@ export default defineComponent({
       selectedOrder,
       platformOptions,
       orderOptions,
-      fetchSearchResults
+      fetchSearchResults,
+      handleSearch,
+      searchBarWidth,
+      SearchBar
     };
   }
 });
@@ -212,6 +246,21 @@ export default defineComponent({
   margin-bottom: 30px;
 }
 
+/* 在移动端每行显示两个卡片 */
+@media (max-width: 768px) {
+  .product-row {
+    flex: 1 1 calc(50% - 16px);
+    max-width: calc(50% - 16px);
+  }
+
+  .product-list {
+    width: 100%;
+  }
+}
+
+.search-box{
+  margin-bottom: 10px;
+}
 /* 每个卡片包裹的 div，固定大小 */
 /* .product-row {
   flex: 0 0 calc(20% - 16px);

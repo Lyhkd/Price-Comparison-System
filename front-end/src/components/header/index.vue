@@ -14,7 +14,7 @@
       content-style="display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
       <div class="menu-box">
         <!-- 菜单 -->
-        <n-menu :options="menuOptions" mode="horizontal" :default-value="'home'" v-model:value="currentRoute" />
+        <n-menu :options="menuOptions" :collapsed="isCollapsed" mode="horizontal" :default-value="'home'" v-model:value="currentRoute" />
         <!-- 搜索框 -->
         <div class="search-box" v-if="!isSearchHidden">
           <n-input round clearable placeholder="搜索商品..." v-model:value="searchInput" @keydown.enter="onSearch" 
@@ -56,9 +56,8 @@
       </div>
     </n-layout-sider>
   </n-layout>
-
-  <n-modal v-model:show="showSettingsModal" title="用户设置" preset="card" style="width: 500px;">
-    <n-form :model="settingsForm" :rules="rules" class="setting-form">
+  <n-modal v-model:show="showSettingsModal" title="用户设置" preset="card" style="width: 400px;" >
+    <n-form :model="settingsForm" :rules="rules" >
       <n-form-item label="用户名" path="username">
         <n-input v-model:value="settingsForm.username" />
       </n-form-item>
@@ -109,6 +108,7 @@ export default defineComponent({
     // const userStore = useUserStore();
     const loginStore = useLoginStore();
     const searchStore = useSearchStore(); 
+
     // 用于渲染图标
     function renderIcon(icon: any) {
       return () => h(NIcon, null, { default: () => h(icon) });
@@ -117,6 +117,7 @@ export default defineComponent({
 
     // 搜索处理
     const showSettingsModal = ref(false);
+    const isCollapsed = ref(false);
     const settingsForm = ref({
       username: loginStore.userDisplayName,
       email: loginStore.loginInfo?.email,
@@ -180,9 +181,11 @@ export default defineComponent({
 
     // 计算属性：根据窗口宽度返回是否隐藏搜索框
     const isSearchHiddenComputed = computed(() => {
-      return window.innerWidth < 780;
+      return window.innerWidth < 820;
     });
     const handleResize = () => {
+      console.log('collapsed:', isCollapsed.value); 
+      isCollapsed.value = isSearchHiddenComputed.value;
       isSearchHidden.value = isSearchHiddenComputed.value;
     };
     onMounted(() => {
@@ -292,7 +295,8 @@ export default defineComponent({
       showSettingsModal,
       settingsForm,
       saveSettings,
-      rules
+      rules,
+      isCollapsed,
     };
   },
 });
@@ -375,6 +379,10 @@ export default defineComponent({
   .search-box {
     display: none;
   }
+}
+
+/* 在更小的屏幕下，只显示菜单图标 */
+@media (max-width: 768px) {
 }
 
 .setting-form {

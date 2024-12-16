@@ -8,7 +8,8 @@ const UUID = 'aa973966-c323-42a1-9ae1-0f0dba690fa5'
 axios.defaults.withCredentials = true
 
 const request = axios.create({
-  baseURL: 'http://127.0.0.1:5000',
+  // baseURL: 'http://127.0.0.1:5000',
+  baseURL: 'http://10.162.29.65:8000',
   timeout: 5000,
 })
 

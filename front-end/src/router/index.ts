@@ -50,47 +50,7 @@ export const routes = [
     path: '/item/:id',
     component: () => import('@/views/item/index.vue'),
     meta: { showFooter: true },
-  },
-  {
-    name: 'login',
-    path: '/login',
-    component: () => import('@/views/login/index.vue'),
-    meta: { showFooter: false },
-  },
-  {
-    name: 'register',
-    path: '/register',
-    component: () => import('@/views/register/index.vue'),
-    meta: { showFooter: false },
-  },
-  {
-    name: 'trade',
-    path: '/trade',
-    component: () => import('@/views/trade/Trade.vue'),
-    meta: { showFooter: true },
-  },
-  {
-    name: 'pay',
-    path: '/pay/:orderId',
-    component: () => import('@/views/pay/Pay.vue'),
-    meta: { showFooter: true },
-    props: true
-  },
-  {
-    name: 'pay-success',
-    path: '/pay-success',
-    component: () => import('@/views/pay/PaySuccess.vue'),
-    meta: { showFooter: true },
-    
-  },  
-  {
-    name: 'my-order',
-    path: '/my-order',
-    component: () => import('@/views/my-order/MyOrder.vue'),
-    meta: { showFooter: true },
-    
   }
-
 ]
 
 const router = createRouter({
@@ -120,32 +80,13 @@ router.beforeEach((to, from, next) => {
       }
 
       break 
-    case 'cart':
+    case 'price-alert':
 
       if(!loginStore.isLogin) {
         next('/home')
       }else{
         next()
       }
-
-      break
-    case 'my-order':
-
-      if(!loginStore.isLogin) {
-        next('/home')
-      }else{
-        next()
-      }
-
-      break
-    case 'trade':
-
-      if(!loginStore.isLogin) {
-        next('/home')
-      }else{
-        next()
-      }
-
       break               
     default:
       next()

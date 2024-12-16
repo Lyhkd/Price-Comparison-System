@@ -1,15 +1,16 @@
 <template>
     <div class="price-alert-page">
         <n-row>
-            <n-col span="5">
+            <n-col span="5" v-if="!isMobile">
                 <UserPanel />
             </n-col>
-            <n-col span="1"></n-col>
-            <n-col span="18">
+            <n-col span="1" v-if="!isMobile"></n-col>
+            <n-col :span="mobileSpan">
+                <UserPanel v-if="isMobile"/>
                 <n-flex vertical justify="space-between">
                     <n-card v-for="alert in alertStore.alertList" :key="alert.id" :hoverable="true" class="product-card"
                         embedded>
-                        <n-grid x-gap="12" :cols="24">
+                        <n-grid x-gap="12" :cols="mobileSpan2">
                             <n-gi span="5">
                                 <img :src="alert.imageUrl" alt="product" class="product-image" />
                                 <div class="reminder-history">
@@ -46,7 +47,7 @@
 
 
                             </n-gi>
-                            <n-gi span="14">
+                            <n-gi span="14" v-if="!isMobile">
                                 <div class="product-card-right">
                                     <PriceChart :priceHistory="validAlertHistory(alert.priceHistory).slice(-5)" />
                                 </div>
@@ -136,10 +137,6 @@ const goToItem = (itemId) => {
 
 const showEdit = ref(false);
 const showDelete = ref(false);
-
-
-
-
 const deleteAlertId = ref(null);
 
 const deleteAlert = (alertId) => {
@@ -175,7 +172,20 @@ const Update = async (alert) => {
     console.log('method update:', alert);
 };
 
+const isMobile = ref(window.innerWidth <= 768);
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+  handleResize(); // 初始化检查
+});
 
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize);
+});
+const mobileSpan = computed(() => (isMobile.value ? 24 : 12));
+const mobileSpan2 = computed(() => (isMobile.value ? 10 : 24));
 </script>
 
 <style scoped>
@@ -186,30 +196,15 @@ const Update = async (alert) => {
     width: 1200px;
 }
 
-.left-panel {
-    width: 20%;
-}
-
-.right-panel {
-    width: 75%;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
 .product-card {
     margin-bottom: 30px;
     display: flex;
     justify-content: left;
     padding: 5px;
-    /* width: 1000px; */
+    width: 1000px;
 }
 
-.product-card-left {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
+
 
 .product-image {
     width: 80px;
@@ -249,5 +244,39 @@ const Update = async (alert) => {
 
 .alert-title :hover {
   color: #0056b3; /* 悬浮时更深的颜色 */
+}
+
+@media (max-width: 768px) {
+  .price-alert-page {
+    width: 92%;
+    align-items: center;
+  }
+
+  .product-card {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    width: 100%;
+  }
+
+  .product-image {
+    width: 100%;
+    height: auto;
+  }
+
+  .product-card-left {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .product-info {
+    width: 100%;
+  }
+
+  .product-card-right {
+    width: 100%;
+    height: auto;
+  }
 }
 </style>

@@ -14,14 +14,18 @@
         <n-col span="2">
         </n-col>
         <n-col span="10">
-          <div class="product-gallery">
+          <div class="product-gallery" v-if="!isMobile">
             <img :src="store.itemData.imageUrl" alt="商品图片" class="product-image" />
             <!-- <image-gallery :images="store.itemData.imgList" /> -->
           </div>
 
         </n-col>
 
-        <n-col span="10">
+        <n-col :span="mobileSpan">
+          <div class="image-container" v-if="isMobile">
+            <img :src="store.itemData.imageUrl" alt="商品图片" class="product-image" />
+            <!-- <image-gallery :images="store.itemData.imgList" /> -->
+          </div>
           <n-space vertical size="large">
             <div class="product-header">
               <n-space vertical size="small">
@@ -94,7 +98,6 @@
       <!-- 右侧商品信息区 -->
 
       <!-- 历史价格走势图 -->
-      <n-button @click="console.log(store.priceHistory)">查看历史价格</n-button>
       <n-card class="price-history" embedded>
         <n-tabs type="line" animated size="large">
           <n-tab-pane name="历史价格走势" tab="历史价格走势">
@@ -104,29 +107,6 @@
         </n-tabs>
       </n-card>
 
-
-      <!-- 相关商品推荐 -->
-      <n-card class="related-products" embedded>
-        <template #header>
-          <n-space align="center">
-            <n-icon><apps-outline /></n-icon>
-            <n-text>相关商品推荐</n-text>
-          </n-space>
-        </template>
-        <n-grid :cols="4" :x-gap="12" responsive="screen">
-          <n-grid-item v-for="item in relatedProducts" :key="item.id">
-            <n-card hoverable class="related-product-card">
-              <template #cover>
-                <img :src="item.image" :alt="item.name" class="related-product-image" />
-              </template>
-              <n-space vertical>
-                <n-text class="related-product-name">{{ item.name }}</n-text>
-                <n-text type="error">¥{{ item.price }}</n-text>
-              </n-space>
-            </n-card>
-          </n-grid-item>
-        </n-grid>
-      </n-card>
 
     </n-card>
   </div>
@@ -146,6 +126,19 @@ const route = useRoute();
 const router = useRouter();
 const store = useItemStore();
 const loginStore = useLoginStore();
+const isMobile = ref(window.innerWidth <= 768);
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+  handleResize(); // 初始化检查
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize);
+});
+const mobileSpan = computed(() => (isMobile.value ? 24 : 12));
 
 onMounted(async () => {
   const itemId = route.params.id;
@@ -190,33 +183,6 @@ watch(() => store.itemData.currentPrice, (newPrice) => {
   form.value.price = newPrice;  // 如果 currentPrice 变化了，更新 form.price
 });
 
-const relatedProducts = ref([
-  {
-    id: '2',
-    name: '智能手机 ABC',
-    price: 2499,
-    image: 'https://example.com/related1.jpg'
-  },
-  {
-    id: '3',
-    name: '智能手机 DEF',
-    price: 3299,
-    image: 'https://example.com/related2.jpg'
-  },
-  {
-    id: '4',
-    name: '智能手机 GHI',
-    price: 2799,
-    image: 'https://example.com/related3.jpg'
-  },
-  {
-    id: '5',
-    name: '智能手机 JKL',
-    price: 3599,
-    image: 'https://example.com/related4.jpg'
-  }
-])
-
 
 const addToPriceAlert = () => {
   console.log(loginStore.isLogin);
@@ -235,6 +201,10 @@ const addToPriceAlert = () => {
 .product-details {
   background-color: #f5f5f5;
   padding: 20px;
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  min-height: 100vh; /* 确保背景高度至少为视口高度 */
 }
 
 .bread-box {
@@ -243,14 +213,19 @@ const addToPriceAlert = () => {
 }
 
 .product-image {
-  width: 400px;
-  height: 400px;
-
+  width: 80%;
+  margin-bottom: 20px; /* 添加间隔 */
+  border: 1px solid #ddd; /* 添加边框 */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 添加阴影 */
 }
 
 .product-card {
+  width: 1200px; /* 最大宽度限制 */
   background-color: white;
   border-radius: 8px;
+  /* align-items: center; */
+  /* display: flex; */
+  /* flex-direction: column; */
 }
 
 
@@ -325,15 +300,7 @@ const addToPriceAlert = () => {
   object-fit: cover;
 }
 
-.related-product-name {
-  font-size: 14px;
-  line-height: 1.4;
-  height: 40px;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
+
 
 .line-through {
   text-decoration: line-through;
@@ -357,4 +324,47 @@ const addToPriceAlert = () => {
   color: red; 
   cursor: pointer;
 } */
+
+ /* 媒体查询，适配移动端 */
+@media (max-width: 768px) {
+  .product-image {
+    width: 80%;
+    max-width: 300px;
+    align-items: center;
+  margin-bottom: 20px; /* 添加间隔 */
+  border: 1px solid #ddd; /* 添加边框 */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+  }
+
+  .product-card{
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bread-box {
+    padding: 5px 10px;
+    margin-bottom: 10px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .current-price {
+    font-size: 24px;
+  }
+
+  .related-product-image {
+    height: 150px;
+  }
+  
+}
+
+
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
 </style>
