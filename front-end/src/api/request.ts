@@ -5,7 +5,7 @@ import { getToken } from '@/libs/token'
 
 const UUID = 'aa973966-c323-42a1-9ae1-0f0dba690fa5'
 
-axios.defaults.withCredentials = true
+// axios.defaults.withCredentials = true
 
 const request = axios.create({
   // baseURL: 'http://127.0.0.1:5000',

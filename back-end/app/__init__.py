@@ -26,7 +26,7 @@ def create_app(celery=None,db_init=False,register_celery_blueprint=False):
     db.init_app(app)
     mail = Mail()
     mail.init_app(app)
-    CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:5173"}})
+    CORS(app)
     if celery:
         register_celery(celery=celery, app=app)  # >> 注册celery
     if register_celery_blueprint:

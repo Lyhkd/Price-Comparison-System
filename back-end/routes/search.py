@@ -26,15 +26,14 @@ def search_items():
     #     search_items_from_websites(keyword, page_begin=pageNo, page_end=pageNo+1, platform=platform)
     #     items = search_items_indb_pagination(keyword, page_number=pageNo, page_size=pageSize, platform=platform)
         
-    if len(items['items']) == 0:
-        return jsonify({"code":1, "message": "No products found", "data": []}), 404
+    
     
     print("异步启动爬虫抓取更多的数据")
     # 异步启动爬虫抓取更多的数据
     thread = Thread(target=search_items_from_websites, args=(keyword, pageNo, pageNo+20, platform))
     thread.start()
     
-    if not items:
+    if len(items['items']) == 0:
         return jsonify({"code":1, "message": "No products found", "data": []}), 404
     
     print("return items", len(items['items']))

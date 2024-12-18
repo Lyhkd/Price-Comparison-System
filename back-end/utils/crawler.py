@@ -87,12 +87,16 @@ class JDCrawler(object):
         # 发送请求，得到结果
         res = self.sess.get(commit_start_url)
         bs = BeautifulSoup(res.text, 'html.parser')
+        save_html(res.text)
         # price = bs.select('[classp=p-price]')
         # print("try to get detail")
         # print(price)
         paras = bs.select('[class=p-parameter]')
         pics = bs.select('[class=spec-items]')
-        pictures = pics[0].select('img')
+        if len(pics) != 0:
+            pictures = pics[0].select('img')
+        else:
+            pictures = []
         parameters = paras[0].select('li')
         # brand = soup[0].select('li')[0].get('title')
         attr = {}
