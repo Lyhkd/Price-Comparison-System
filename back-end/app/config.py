@@ -45,9 +45,12 @@ class Cookie:
         # 构建文件路径
         JD_cookie_file_path = os.path.join(project_root, 'data', 'JDcookie.txt')
         Amazon_cookie_file_path = os.path.join(project_root, 'data', 'Amazoncookie.txt')
+        GW_cookie_file_path = os.path.join(project_root, 'data', 'GWcookie.txt')
         
         with open(JD_cookie_file_path, 'r') as f:
             self.JDcookie = f.read()
         with open(Amazon_cookie_file_path, 'r') as f:
             self.Amazoncookie = f.read()
+        with open(GW_cookie_file_path, 'r') as f:
+            self.GWcookie = f.read()
 

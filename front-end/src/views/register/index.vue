@@ -132,7 +132,9 @@ export default defineComponent({
             })
             try {
                 await loginStore.register(registerForm.value.username, registerForm.value.email, registerForm.value.password)
+                console.log('注册成功')
                 await loginStore.login(registerForm.value.username, registerForm.value.password)
+                console.log('登录成功')
                 router.push({ name: 'home' })
             } catch (error) {
                 // 处理注册过程中发生的错误
@@ -183,7 +185,7 @@ export default defineComponent({
 
     /* 设置最小高度 */
     .n-card {
-        width: 450px;
+        width: 400px;
         height: 500px;
         box-shadow: 0 1px 4px rgba(0, 12, 24, 0.2);
     }

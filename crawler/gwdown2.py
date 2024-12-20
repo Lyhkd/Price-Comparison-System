@@ -26,10 +26,8 @@ class AbstractWebPage:
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
                               'Chrome/80.0.3987.149 Safari/537.36'
             }
-        self.session = None
-
-    async def create_session(self):
         self.session = aiohttp.ClientSession(headers=self.headers)
+
 
     async def close_session(self):
         if self.session:
@@ -45,8 +43,13 @@ class Content(AbstractWebPage):
         super(Content, self).__init__(cookie)
         start_url = 'https://www.gwdang.com/search?crc64='
         encoded_keyword = quote(keyword) 
-        self.url_list = [start_url + str(j) + '&s_product=' + encoded_keyword + '&site_id=3' for j in range(1, end_page + 1)]
+        self.url_list = [start_url + str(j) + '&s_product=' + encoded_keyword + '&site_id=3'for j in range(1, end_page + 1)]
         self.end_page = end_page
+        self.PLATFORM = {
+            'JD': '3',
+            'TM': '83',
+            'SN': '25'
+        }
 
     def print(self):
         print(self.url_list, sep='\n')
@@ -106,6 +109,39 @@ class Content(AbstractWebPage):
 
         wb.save("/Users/lyhkd/ZJU/Fall2024/BS/Price-Comparison-System/crawler/good_info2.xlsx")
 
+    def get_item_detail_info(self, html):
+        soup = BeautifulSoup(html, 'html.parser')
+        item_info = {}
+        # save_html(html)
+        # 获取商品图片
+        info_div = soup.select_one('[class=product-info-table]')
+        if info_div:
+            infos = info_div.select('[class=info-item]')
+            for info in infos:
+                # print(info)
+                key = info.select_one(".info-key").text.replace(":","").strip()
+                # print(key)
+                value = info.select_one(".info-value").text.strip()
+                # print(value)
+                item_info[key] = value
+        # 获取商品描述
+        return item_info
+
+    async def get_detail_string(self, sku=None, platform='JD'):
+        if platform in self.PLATFORM:
+            platform_str = self.PLATFORM[platform]
+        else:
+            return None
+        item_url = f'https://www.gwdang.com/crc64/dp{sku}-{platform_str}'
+        print("in get detail string", item_url)
+        async with self.session.get(item_url) as response:
+            html = await response.text()
+            save_html(html)
+            item_info = self.get_item_detail_info(html)
+            item_info_str = ''
+            for key, value in item_info.items():
+                item_info_str += key + ':' + value + '\n'
+            return item_info_str
 
 async def main():
     cookie_str = ''
@@ -114,7 +150,10 @@ async def main():
 
     content_page = Content(cookie_str, 'iphone', 1)
     content_page.print()
-    await content_page.get_item_info_xslx()
+    # await content_page.get_item_info_xslx()
+    string = await  content_page.get_detail_string('100067903671', 'JD')
+    print(string)
+
 
 if __name__ == '__main__':
     asyncio.run(main())

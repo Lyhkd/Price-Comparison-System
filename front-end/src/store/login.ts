@@ -41,12 +41,8 @@ export const useLoginStore = defineStore('useLoginStore', {
       return (await reqRegValCode(email))
     },     
     async register(name: string, email: string, password: string) {
-      try {
         await postUserSignup({ name, email, password })
-        console.log('注册成功')
-      } catch (error) {
-        console.error('注册失败:', error)
-      }
+
     },
     async load() {
       if(getToken()){

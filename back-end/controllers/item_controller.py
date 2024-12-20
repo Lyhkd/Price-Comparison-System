@@ -1,7 +1,7 @@
 from models import db
 from models.item import Item
 from controllers.platform_controller import get_platform_id, get_platform_name
-from utils.crawler import JDCrawler, AmazonCrawler
+from utils.crawler import JDCrawler, AmazonCrawler, GWCrawler
 from app.config import Cookie
 from datetime import datetime, timezone
 import jieba
@@ -13,6 +13,7 @@ import asyncio
 cookie = Cookie()
 JDcrawler = JDCrawler(cookie.JDcookie)
 AZcrawler = AmazonCrawler(cookie.Amazoncookie)
+GWcrawler = GWCrawler(cookie.GWcookie)
 
 def get_random_items(page_size):
     items = db.session.query(Item).order_by(db.func.random()).limit(page_size).all()
@@ -44,7 +45,8 @@ def get_item_details(item_id):
         return None
     if item.description is None or ':' not in item.description:
         if item.platform_id == get_platform_id('JD'):
-            item.description = JDcrawler.get_detail_string(item.sku)
+            # item.description = JDcrawler.get_detail_string(item.sku)
+            item.description = asyncio.run(GWcrawler.get_detail_string(item.sku, platform='JD'))
         elif item.platform_id == get_platform_id('AMAZON'):
             item.description = asyncio.run(AZcrawler.get_detail_string(item.sku))
             print("get amazon description", item.description)
@@ -199,9 +201,10 @@ def search_items_from_websites(keyword, page_begin=1, page_end=1, platform='all'
     try: # 爬虫抓取数据
         if platform in ['all', 'JD']:
             print('searching JD')
-            JDcrawler.update_search(keyword, page_begin, page_end)
-            # results = crawler.read_good_info_xlsx("/Users/lyhkd/ZJU/Fall2024/BS/Price-Comparison-System/good_info2.xlsx")
-            results = JDcrawler.get_item_info_dict()
+            GWcrawler.update_search(keyword, 'JD', page_begin, page_end)
+            results = asyncio.run(GWcrawler.get_item_info_dict())
+            # JDcrawler.update_search(keyword, page_begin, page_end)
+            # results = JDcrawler.get_item_info_dict()
             from run import app
             with app.app_context():
                 for result in results:

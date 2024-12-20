@@ -2,7 +2,7 @@ import requests, json
 from bs4 import BeautifulSoup
 from time import sleep
 import openpyxl
-
+from urllib.parse import quote  
 import aiohttp
 import asyncio
 import os
@@ -87,7 +87,7 @@ class JDCrawler(object):
         # 发送请求，得到结果
         res = self.sess.get(commit_start_url)
         bs = BeautifulSoup(res.text, 'html.parser')
-        save_html(res.text)
+        # save_html(res.text)
         # price = bs.select('[classp=p-price]')
         # print("try to get detail")
         # print(price)
@@ -152,6 +152,147 @@ class JDCrawler(object):
             item_list.append(item_info)
         
         return item_list
+
+
+class GWCrawler(object):
+    def __init__(self, cookie, use_cookie=True):
+        if use_cookie:
+            self.headers = {
+                'authority': 'www.gwdang.com',
+                'referer': 'https://www.gwdang.com/',
+                'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                'accept-encoding': 'gzip, deflate, br, zstd',
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+                'sec-fetch-site': 'same-origin',
+                'sec-fetch-mode': 'navigate',
+                'sec-fetch-user': '?1',
+                'sec-fetch-dest': 'document',
+                'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+                'cookie': cookie
+            }
+        else:
+            self.headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                              'Chrome/80.0.3987.149 Safari/537.36'
+            }
+        self.PLATFORM = {
+            'JD': '3',
+            'TM': '83',
+            'SN': '25'
+        }
+        
+    async def create_session(self):
+        self.session = aiohttp.ClientSession(headers=self.headers)
+        
+    async def close_session(self):
+        if self.session:
+            await self.session.close()
+            
+    def update_search(self, keyword, platform='JD', page_begin=1, page_end=1):
+        print(keyword, platform, page_begin, page_end)
+        platform_str = ''
+        if platform in self.PLATFORM:
+            platform_str = self.PLATFORM[platform]
+        start_url = 'https://www.gwdang.com/search?crc64='
+        encoded_keyword = quote(keyword) 
+        self.url_list = [start_url + str(j) + '&s_product=' + encoded_keyword + '&site_id=' + platform_str for j in range(page_begin, page_end + 1)]
+        self.end_page = page_end
+        
+    async def fetch(self, url):
+        async with self.session.get(url) as response:
+            response_text = await response.text()
+            # save_html(response_text)
+            return response_text
+
+    async def fetch_all(self):
+        tasks = [self.fetch(url) for url in self.url_list]
+        return await asyncio.gather(*tasks)
+
+    
+    # 获取商品详情信息
+    def get_item_detail_info(self, html):
+        soup = BeautifulSoup(html, 'html.parser')
+        item_info = {}
+        # 获取商品图片
+        info_div = soup.select_one('[class=product-info-table]')
+        if info_div:
+            infos = info_div.select('[class=info-item]')
+            for info in infos:
+                key = info.select_one(".info-key").text.replace(":","").strip()
+                value = info.select_one(".info-value").text.strip()
+                item_info[key] = value
+        # 获取商品描述
+        return item_info
+
+    async def get_detail_string(self, sku=None, platform='JD'):
+        if platform in self.PLATFORM:
+            platform_str = self.PLATFORM[platform]
+        else:
+            return None
+        item_url = f'https://www.gwdang.com/crc64/dp{sku}-{platform_str}'
+        print("in get detail string", item_url)
+        await self.create_session()
+        async with self.session.get(item_url) as response:
+            raw_html = await response.read()  # 直接读取响应的字节内容
+            try:
+                html = raw_html.decode('utf-8')  # 尝试使用 UTF-8 解码
+            except UnicodeDecodeError:
+                html = raw_html.decode('gbk')  # 如果 UTF-8 解码失败，尝试使用 GBK 解码
+            # save_html(html)
+            item_info = self.get_item_detail_info(html)
+            item_info_str = ''
+            for key, value in item_info.items():
+                item_info_str += key + ':' + value + '\n'
+            await self.close_session()
+            return item_info_str
+    
+    async def get_item_info_dict(self):
+        item_list = []  # 用于存储所有商品的字典
+        await self.create_session()
+        results = await self.fetch_all()
+        await self.close_session()
+
+        for res in results:
+            soup = BeautifulSoup(res, 'html.parser').select('[class="dp-list"]')
+            if not soup:
+                continue
+            good_list = soup[0].select('li')
+            print("get good_list", len(good_list))
+            for temp in good_list:
+                if temp.get('data-dp-id') is None:
+                    continue
+                item_info = {}  # 用于存储单个商品的字典
+
+                # sku
+                sku = temp.get('data-dp-id').strip().split('-')[0]
+                item_info['sku'] = sku
+
+                # 获取名称信息
+                name_div = temp.select_one('[class="item-title"]')
+                name = name_div.text.strip()
+                item_info['title'] = name
+
+                # 商品链接
+                commit_start_url = f'https://item.jd.com/{sku}.html'
+                item_info['link'] = commit_start_url
+
+                # 价格信息
+                price_div = temp.select_one('[class=bigRedPrice]')
+                item_info['price'] = price_div.text.strip()[1:]
+
+                # 店铺信息
+                shop_div = temp.select_one('[class=site]')
+                item_info['shop'] = shop_div.get_text().strip()
+
+                # 图片信息
+                img_url = temp.select_one('[class=item-img]').select_one('img').get('data-original')
+                item_info['img_url'] = img_url
+
+                # 将商品信息字典加入列表
+                item_list.append(item_info)
+
+        # 返回商品字典列表
+        return item_list
     
 class AmazonCrawler(object):
     def __init__(self, cookie):
@@ -207,6 +348,7 @@ class AmazonCrawler(object):
             
             item_list = [item for sublist in results for item in sublist]
             # print(item_list)
+            await session.close()
             return item_list
         
     def get_item_info_dict(self, html):
@@ -260,14 +402,6 @@ class AmazonCrawler(object):
         # 返回商品字典列表
         return item_list
     
-    def get_price(self, html):
-        soup = BeautifulSoup(html, 'html.parser')
-        price_whole = soup.select_one('span.a-price-whole')
-        price_fraction = soup.select_one('span.a-price-fraction')
-        if price_whole and price_fraction:
-            return price_whole.text.replace(',','').strip() + price_fraction.text.strip()
-        else:
-            return None
     
     def get_item_detail_info(self, html):
         soup = BeautifulSoup(html, 'html.parser')
@@ -293,7 +427,7 @@ class AmazonCrawler(object):
                 detail_info = detail_info.select('li')
                 if detail_info is not None:
                     detail += detail_info
-        print(detail)
+        # print(detail)
         for i in detail:
             if ':' in i.text:
                 key, value = i.text.split(':', 1)  # 只分割一次，避免值中有 ":" 的情况
@@ -332,6 +466,7 @@ class AmazonCrawler(object):
         print("in get detail string", item_url)
         async with aiohttp.ClientSession() as session:
             item_info_str = await self.fetch_item_detail(session, item_url)
+            await session.close()
             return item_info_str
         
     async def get_item_price(self, sku=None):
@@ -339,6 +474,7 @@ class AmazonCrawler(object):
         async  with aiohttp.ClientSession() as session:
             async with session.get(item_url, headers=self.headers) as response:
                 html = await response.text()
+                await session.close()
                 return self.get_price(html)
 
 def save_html(content):

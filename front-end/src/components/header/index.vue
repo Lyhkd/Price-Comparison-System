@@ -118,11 +118,11 @@ export default defineComponent({
     // 搜索处理
     const showSettingsModal = ref(false);
     const isCollapsed = ref(false);
-    const settingsForm = ref({
+    const settingsForm = computed(() => ({
       username: loginStore.userDisplayName,
       email: loginStore.loginInfo?.email,
       phone: loginStore.loginInfo?.phone,
-    });
+    }));
 
     const rules: FormRules = {
   username: [

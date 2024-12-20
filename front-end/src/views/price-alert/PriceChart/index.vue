@@ -37,7 +37,7 @@ export default {
       }, maxPriceItems[0]);
       const minPriceItem = minPriceItems.reduce((latest, item) => {
         return new Date(item.date) > new Date(latest.date) ? item : latest;
-      }, maxPriceItems[0]);
+      }, minPriceItems[0]);
 
       const maxPriceDate = maxPriceItem ? maxPriceItem.date : '未知';
       const minPriceDate = minPriceItem ? minPriceItem.date : '未知';
