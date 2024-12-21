@@ -103,13 +103,13 @@ def save_html(content):
     print("页面已保存至:", filepath)
  
 async def monitor_amazon():
-    
+    proxy = "http://127.0.0.1:7890"
     # 监控的产品，搜索词
     keyword = "iphone"
     search_url = f"https://www.amazon.com/s?k={keyword.replace(' ', '+')}"
  
     async with aiohttp.ClientSession() as session:
-        response = await session.get(search_url, headers=headers)
+        response = await session.get(search_url, headers=headers, proxy=proxy)
         html = await response.text()
         await session.close()
         item_list = get_item_info_dict(html)
@@ -197,16 +197,16 @@ if __name__ == '__main__':
  
     # loop.run_until_complete(monitor_amazon())
     # loop.close()
-    # item_list = asyncio.run(monitor_amazon())
+    item_list = asyncio.run(monitor_amazon())
 
     # with open('page/20241214160011.html','r') as f:
     #     html=f.read()
     # item_list = get_item_info_dict(html)
-    # for item in item_list:
-    #     print(item)
+    for item in item_list:
+        print(item)
     
-    item_info = asyncio.run(detail())
+    # item_info = asyncio.run(detail())
     # with open('page/20241214202929.html','r') as f:
     #     html=f.read()
-    item_info = get_item_detail_info(item_info)
-    print(item_info)
+    # item_info = get_item_detail_info(item_info)
+    # print(item_info)

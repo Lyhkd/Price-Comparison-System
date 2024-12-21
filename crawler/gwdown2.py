@@ -72,10 +72,9 @@ class Content(AbstractWebPage):
         if ws.max_row == 1:  # 表格只有一行，说明是新表格，添加表头
             ws.append(["sku", "title", "link", "price", "shop", "img_url"])
 
-        await self.create_session()
+        # await self.create_session()
         results = await self.fetch_all()
-        await self.close_session()
-        print
+        # await self.close_session()
         for res in results:
             soup = BeautifulSoup(res, 'html.parser').select('[class="dp-list"]')
             if not soup:
@@ -106,7 +105,7 @@ class Content(AbstractWebPage):
                 
                 print(good_info)
                 ws.append(good_info)
-
+        print(results)
         wb.save("/Users/lyhkd/ZJU/Fall2024/BS/Price-Comparison-System/crawler/good_info2.xlsx")
 
     def get_item_detail_info(self, html):
@@ -135,7 +134,7 @@ class Content(AbstractWebPage):
         item_url = f'https://www.gwdang.com/crc64/dp{sku}-{platform_str}'
         print("in get detail string", item_url)
         async with self.session.get(item_url) as response:
-            html = await response.text()
+            html = await response.text(encoding='utf-8', errors='ignore')  # 指定编码并忽略错误
             save_html(html)
             item_info = self.get_item_detail_info(html)
             item_info_str = ''
@@ -150,9 +149,10 @@ async def main():
 
     content_page = Content(cookie_str, 'iphone', 1)
     content_page.print()
-    # await content_page.get_item_info_xslx()
-    string = await  content_page.get_detail_string('100067903671', 'JD')
-    print(string)
+    await content_page.get_item_info_xslx()
+    # string = await  content_page.get_detail_string('100067903671', 'JD')
+    await content_page.close_session()
+    # print(string)
 
 
 if __name__ == '__main__':

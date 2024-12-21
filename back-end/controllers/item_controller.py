@@ -80,6 +80,7 @@ def update_item(sku, price, keyword=''):
     add_item_price_history(item)
     
     
+    
 
 def add_item(result, keyword='', platform_name='JD', platform_id=None):
     search_title = (keyword+' '+segment_text(result['title']))[:255]
@@ -194,8 +195,12 @@ def search_items_indb_pagination(keyword, page_number, page_size,max_size=None, 
         "items": serialized_items
     }
 
-
+is_searching = False
 def search_items_from_websites(keyword, page_begin=1, page_end=1, platform='all'):
+    global is_searching
+    if is_searching:
+        return
+    is_searching = True
     print('Searching items for keyword:', keyword)
     results = []
     try: # 爬虫抓取数据
@@ -203,8 +208,8 @@ def search_items_from_websites(keyword, page_begin=1, page_end=1, platform='all'
             print('searching JD')
             GWcrawler.update_search(keyword, 'JD', page_begin, page_end)
             results = asyncio.run(GWcrawler.get_item_info_dict())
-            # JDcrawler.update_search(keyword, page_begin, page_end)
-            # results = JDcrawler.get_item_info_dict()
+            JDcrawler.update_search(keyword, page_begin, page_end)
+            results += JDcrawler.get_item_info_dict()
             from run import app
             with app.app_context():
                 for result in results:
@@ -238,6 +243,7 @@ def search_items_from_websites(keyword, page_begin=1, page_end=1, platform='all'
                     
                     if is_sku_exists(result['sku']):
                         update_item(result['sku'], result['price'], keyword)
+                        
                     else:
                         add_item(result, keyword, platform_name='AMAZON')
                         print("add amazon item")
@@ -245,6 +251,7 @@ def search_items_from_websites(keyword, page_begin=1, page_end=1, platform='all'
     except Exception as e: # 爬虫出错，从数据库中查找
         print('crawler Error:', e, ' Searching items from database')
     print(f"get {len(results)} items from websites for keyword {keyword}")
+    is_searching = False
 
 
 

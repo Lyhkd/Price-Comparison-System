@@ -57,6 +57,6 @@ def add_item_price_history(item):
                 # print("no need to update price history")
                 return
     price_history = PriceHistory(item_id=item.id, platform_id=item.platform_id, price=item.current_price)
-    print("add item price history", item.id, item.current_price)
+    print("add/update new item price history", item.id, item.current_price)
     db.session.add(price_history)
     db.session.commit()

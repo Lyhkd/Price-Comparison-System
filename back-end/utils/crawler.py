@@ -7,6 +7,7 @@ import aiohttp
 import asyncio
 import os
 import time
+import random
 
 class JDCrawler(object):
     def __init__(self, cookie, use_cookie=True):
@@ -189,19 +190,20 @@ class GWCrawler(object):
             await self.session.close()
             
     def update_search(self, keyword, platform='JD', page_begin=1, page_end=1):
-        print(keyword, platform, page_begin, page_end)
         platform_str = ''
         if platform in self.PLATFORM:
             platform_str = self.PLATFORM[platform]
         start_url = 'https://www.gwdang.com/search?crc64='
-        encoded_keyword = quote(keyword) 
+        encoded_keyword = quote(keyword, encoding='gb2312') 
         self.url_list = [start_url + str(j) + '&s_product=' + encoded_keyword + '&site_id=' + platform_str for j in range(page_begin, page_end + 1)]
         self.end_page = page_end
         
     async def fetch(self, url):
         async with self.session.get(url) as response:
+            await asyncio.sleep(random.randint(5, 10))
             response_text = await response.text()
             # save_html(response_text)
+            print("[GW Crawler]fetch url", url)
             return response_text
 
     async def fetch_all(self):
@@ -250,8 +252,9 @@ class GWCrawler(object):
         item_list = []  # 用于存储所有商品的字典
         await self.create_session()
         results = await self.fetch_all()
+        print("get item_list", len(results))
+        # print(results)
         await self.close_session()
-        sleep(5)
         for res in results:
             soup = BeautifulSoup(res, 'html.parser').select('[class="dp-list"]')
             if not soup:
@@ -290,12 +293,13 @@ class GWCrawler(object):
 
                 # 将商品信息字典加入列表
                 item_list.append(item_info)
-
+        
         # 返回商品字典列表
         return item_list
     
 class AmazonCrawler(object):
     def __init__(self, cookie):
+        self.proxy = "http://127.0.0.1:7890"
         self.cookie = cookie
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
@@ -335,9 +339,17 @@ class AmazonCrawler(object):
     async def fetch_page(self, session, url):
         async with session.get(url, headers=self.headers) as response:
             html = await response.text()
-            await asyncio.sleep(2)  # 延迟2秒
+            await asyncio.sleep(random.randint(5, 10))
+            print("[Amazon Crawler]fetch url", url)
             if "dogs of amazon" in html.lower():
-                print("搜索被标识为异常访问")
+                print("搜索被标识为异常访问, retry with proxy")
+                async with session.get(url, headers=self.headers, proxy=self.proxy) as response:
+                    html = await response.text()
+                    if "dogs of amazon" in html.lower():
+                        print("代理仍然被标识为异常访问")
+                        return []
+                    
+            save_html(html)
             return self.get_item_info_dict(html)
             
     async def get_item_amazon(self):

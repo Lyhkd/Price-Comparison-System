@@ -20,7 +20,7 @@ class AlertHistory(db.Model):
     __tablename__ = 'alert_history'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    alert_id = db.Column(db.Integer, db.ForeignKey("price_alerts.id"), nullable=False)
+    alert_id = db.Column(db.Integer, db.ForeignKey("price_alerts.id", ondelete='CASCADE'), nullable=False)
     # price_before = db.Column(db.Numeric(10, 2), nullable=False)
     price_after = db.Column(db.Numeric(10, 2), nullable=False)
     # notification_status = db.Column(db.JSON)

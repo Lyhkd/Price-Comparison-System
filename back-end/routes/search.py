@@ -34,7 +34,13 @@ def search_items():
     
     print("异步启动爬虫抓取更多的数据")
     # 异步启动爬虫抓取更多的数据
-    thread = Thread(target=search_items_from_websites, args=(keyword, pageNo, pageNo+10, platform))
+    if platform != 'AMAZON':
+        pageNo = pageNo + random.randint(1, 5)
+        endNo = pageNo + 2
+    else :
+        pageNo = pageNo
+        endNo = pageNo + 5
+    thread = Thread(target=search_items_from_websites, args=(keyword, pageNo, endNo, platform))
     thread.start()
     
     if len(items['items']) == 0:
