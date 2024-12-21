@@ -8,11 +8,11 @@ def md5(str):
     return m.hexdigest()
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:yuer0822@localhost:3306/pricecomp'
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'mysql+pymysql://root:yuer0822@localhost:3306/pricecomp')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = secrets.token_urlsafe(32)  # 生成一个32字节长度的安全密钥
-    CELERY_BROKER_URL='redis://127.0.0.1:6379/1'
-    CELERY_RESULT_BACKEND='redis://127.0.0.1:6379/2'
+    CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://127.0.0.1:6379/1')
+    CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://127.0.0.1:6379/2')
     MAIL_SERVER="smtp.163.com"
     MAIL_PORT=465
     MAIL_USE_SSL=True

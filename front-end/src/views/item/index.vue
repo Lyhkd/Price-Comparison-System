@@ -115,7 +115,6 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { NCard, NButton, NTag } from 'naive-ui'
-import ImageGallery from './ImageGallery/index.vue'
 import PriceChart from './PriceChart/index.vue'
 import { NotificationsOutline } from "@vicons/ionicons5";
 import { onMounted } from 'vue';

@@ -1,0 +1,66 @@
+version: '3.9'
+
+services:
+  flask:
+    build:
+      context: ./back-end  # Flask 项目目录
+    container_name: flask_app
+    ports:
+      - "5001:5000"
+    depends_on:
+      - redis
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=mysql+pymysql://user:password@mysql_db/pricecomp
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+
+  vue:
+    build:
+      context: ./front-end  # Vue3 项目目录
+    container_name: vue_app
+    ports:
+      - "8080:5173"
+    command: npm run start
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: pricecomp
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  celery:
+    build:
+      context: ./back-end  # Flask 项目目录
+    container_name: celery_worker
+    command: celery -A run.celery worker --loglevel=info  # 启动 Celery worker
+    depends_on:
+      - flask
+      - redis
+
+  celery-beat:
+    build:
+      context: ./back-end  # Flask 项目目录
+    container_name: celery_beat
+    command: celery -A run.celery beat --loglevel=info  # 启动 Celery beat
+    depends_on:
+      - flask
+      - redis
+
+volumes:
+  mysql_data:

@@ -1,8 +1,12 @@
 from . import api  # 从 __init__.py 导入 'search' Blueprint
 from flask import jsonify, request
 from controllers import search_items_indb_pagination, search_items_from_websites, get_random_items
-from threading import Thread
-    
+from threading import Thread, Lock
+import random
+
+# 标志变量和锁
+is_searching = False
+lock = Lock()
 @api.route('/search', methods=['GET'])
 def search_items():
     try:
@@ -30,7 +34,7 @@ def search_items():
     
     print("异步启动爬虫抓取更多的数据")
     # 异步启动爬虫抓取更多的数据
-    thread = Thread(target=search_items_from_websites, args=(keyword, pageNo, pageNo+20, platform))
+    thread = Thread(target=search_items_from_websites, args=(keyword, pageNo, pageNo+10, platform))
     thread.start()
     
     if len(items['items']) == 0:

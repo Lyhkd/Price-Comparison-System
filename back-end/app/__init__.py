@@ -44,6 +44,8 @@ def create_app(celery=None,db_init=False,register_celery_blueprint=False):
 
     
 def make_celery(app_name):
+    print("celeryconfig.broker_url", celeryconfig.broker_url)
+    print("celeryconfig.result_backend", celeryconfig.result_backend)
     celery = Celery(app_name,
                     broker=celeryconfig.broker_url,
                     backend=celeryconfig.result_backend)

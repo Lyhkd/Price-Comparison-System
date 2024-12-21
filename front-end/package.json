@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "cross-env vite --host",
+    "start": "cross-env vite --host",
     "build": "vite build",
     "preview": "vite preview"
   },

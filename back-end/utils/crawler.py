@@ -251,7 +251,7 @@ class GWCrawler(object):
         await self.create_session()
         results = await self.fetch_all()
         await self.close_session()
-
+        sleep(5)
         for res in results:
             soup = BeautifulSoup(res, 'html.parser').select('[class="dp-list"]')
             if not soup:
