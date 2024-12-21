@@ -16,8 +16,17 @@ COPY . .
 # 构建前端项目
 RUN npm run build
 
+# 使用 Nginx 作为最终的运行环境
+FROM nginx:latest
+
+# 复制构建的前端项目到 Nginx 的默认静态文件目录
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# 复制 Nginx 配置文件
+COPY default.conf /etc/nginx/conf.d/default.conf
+
 # 暴露服务端口
-EXPOSE 5173
+EXPOSE 80
 
 # 启动 Nginx
-CMD ["npm", "run", "start"]
+CMD ["nginx", "-g", "daemon off;"]

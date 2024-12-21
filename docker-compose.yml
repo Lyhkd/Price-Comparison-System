@@ -19,9 +19,18 @@ services:
     build:
       context: ./front-end  # Vue3 项目目录
     container_name: vue_app
+    depends_on:
+        - flask
+  
+  nginx:
+    build:
+      context: ./front-end  # Nginx 配置文件目录
+    container_name: nginx
     ports:
-      - "8080:5173"
-    command: npm run start
+      - "80:80"
+    depends_on:
+      - vue
+      - flask
 
   mysql:
     image: mysql:8.0
@@ -36,6 +45,7 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d  # 挂载 SQL 文件目录
 
   redis:
     image: redis:latest

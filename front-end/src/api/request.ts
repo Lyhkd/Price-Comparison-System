@@ -8,7 +8,8 @@ const UUID = 'aa973966-c323-42a1-9ae1-0f0dba690fa5'
 // axios.defaults.withCredentials = true
 
 const request = axios.create({
-  baseURL: 'http://127.0.0.1:5001',
+  // baseURL: 'http://127.0.0.1:5001',
+  baseURL: '/api',
   // baseURL: 'http://10.162.29.65:8000',
   // baseURL: "http://flask:5000",
   timeout: 5000,
