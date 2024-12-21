@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # 暴露服务端口
-EXPOSE 80
+EXPOSE 5173
 
 # 启动 Nginx
 CMD ["npm", "run", "start"]

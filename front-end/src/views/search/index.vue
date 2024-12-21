@@ -109,9 +109,15 @@ export default defineComponent({
     };
 
   const checkLoadingStatus = () => {
+    let retry_times = 0;
     if (loading.value) {
         console.log("Loading is still true, retrying...");
         setTimeout(fetchSearchResults, 5000); // 5秒后重新发出请求
+        retry_times++;
+        if (retry_times > 3) {
+          clearInterval(checkInterval); // 取消定时检查
+          console.log("Loading is still true after 3 retries, stopping interval check.");
+        }
       } else {
         clearInterval(checkInterval); // 取消定时检查
         console.log("Loading is false, stopping interval check.");
