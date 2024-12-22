@@ -1,220 +1,212 @@
-import requests
+import aiohttp
+import asyncio
+import os
+import time
+from bs4 import BeautifulSoup
 
-url='https://www.amazon.com/KAVU-Rope-Bag-Denim-Size/product-reviews/xxxxxxx'
-url = "https://www.amazon.com/"
 with open('/Users/lyhkd/ZJU/Fall2024/BS/Price-Comparison-System/crawler/amazon_cookie.txt','r') as f:
     cookie=f.read()
-web_header={
-    'Referer': 'https://www.amazon.com/',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0',
-    'Accept': '*/*',
-    'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Connection': 'keep-alive',
-    'Cookie': cookie,
-    'TE': 'Trailers'
-}
-r = requests.get(url,headers=web_header)
-with open('amazon.html','w',encoding='utf-8') as f:
-    f.write(r.text)
-print(r.status_code)
-
-import requests, json
-from bs4 import BeautifulSoup
-import openpyxl
-from time import sleep, time
-
-
-# 基类，后续可以在此之上扩展
-class AbstractWebPage:
-    def __init__(self, cookie, use_cookie=True):
-        if use_cookie:
-            self.headers = {
-                'referer': 'https://search.jd.com/', 
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0',
-                'Accept': '*/*',
-                'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Cookie': '你的cookie值',
-                'TE': 'Trailers'}
-        else:
-            self.headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                              'Chrome/80.0.3987.149 Safari/537.36'
-            }
-        self.sess = requests.session()
-        self.sess.headers.update(self.headers)
-
-
-# 目录类，用来表示搜索结果
-class Content(AbstractWebPage):
-    def __init__(self, cookie, keyword, end_page):
-        super(Content, self).__init__(cookie)
-        start_url = 'https://search.jd.com/Search?keyword=' + keyword + '&enc=utf-8&wq=' + keyword
-        self.url_list = [start_url + '&page=' + str(j) for j in range(1, end_page + 1)]
-        self.end_page = end_page
-
-    def print(self):
-        print(self.url_list, sep='\n')
-
-    def get_item_info(self):
-        with open("good_info.txt", 'w', encoding='utf-8') as f:
-            f.write("产品名称" + '\t' + '价格' + '\t' + '销量' + '\t' '店铺' + '\n')
-            f.write("*" * 50 + '\n')
-            for url in self.url_list:
-                res = self.sess.get(url)
-                res.encoding = 'utf-8'
-                res = res.text
-                # 定位搜索结果主体，并获取所有的商品的标签
-                soup = BeautifulSoup(res, 'html.parser').select('#J_goodsList > ul')
-                good_list = soup[0].select('[class=gl-i-wrap]')
-                # 循环获取所有商品信息
-                for temp in good_list:
-                    # 获取名称信息
-                    name_div = temp.select_one('[class="p-name p-name-type-2"]')
-                    good_info = name_div.text.strip() + '\t'
-
-                    # 价格信息
-                    price_div = temp.select_one('[class=p-price]')
-                    good_info += price_div.text.strip() + '\t'
-
-                    # 店铺信息
-                    shop_div = temp.select_one('[class=p-shop]')
-                    good_info += shop_div.get_text().strip() + '\t'
-                    f.write(good_info + '\n')
-                    f.write("*" * 50 + '\n')
-                    
-                    # 图片信息
-                    img_div = temp.select_one('[class=p-img]')
-                    if img_div and img_div.has_attr('src'):
-                        img_url = img_div['src']
-                        # 处理相对链接的情况
-                        if img_url.startswith("//"):
-                            img_url = "https:" + img_url
-                        good_info.append(img_url)
-                    else:
-                        good_info.append("无图片链接")
-            f.close()
-    def get_detail(self, sku=None):
-        sku = 100149996442
-        commit_start_url = f'https://item.jd.com/{sku}.html'
-        # 发送请求，得到结果
-        res = self.sess.get(commit_start_url)
-        paras = BeautifulSoup(res.text, 'html.parser').select('[class=p-parameter]')
-        pics = BeautifulSoup(res.text, 'html.parser').select('[class=spec-items]')
-        pictures = pics[0].select('img')
-        parameters = paras[0].select('li')
-        # brand = soup[0].select('li')[0].get('title')
-        attr = {}
-        for parameter in parameters:
-            attr[parameter.get_text().split('：')[0]] = parameter.get_text().split('：')[1].strip()
-        attr['img_plus'] = ""
-        for pic in pictures:
-            attr['img_plus'] += "https:"+pic.get('src')+";"
-        print(attr)
-        return parameters
-    def get_item_info_xslx(self):
-        wb = openpyxl.load_workbook("/Users/lyhkd/ZJU/Fall2024/BS/Price-Comparison-System/crawler/good_info2.xlsx")
-        ws = wb.active  # 默认获取活动工作表，如果有多个工作表，可以通过 wb[sheet_name] 获取指定工作表
-
-        # 确保表头存在，如果没有表头，添加表头
-        if ws.max_row == 1:  # 表格只有一行，说明是新表格，添加表头
-            ws.append(["sku", "title", "link", "price", "shop", "shop_link", "img_url"])
-
-        # 写分隔线
-
-
-        for url in self.url_list:
-            res = self.sess.get(url)
-            res.encoding = 'utf-8'
-            res = res.text
-            
-            soup = BeautifulSoup(res, 'html.parser').select('#J_goodsList > ul')
-            while (len(soup) == 0):
-                with open("good_info.html", 'w', encoding='utf-8') as f:
-                    f.write(res)
-                print("retry")
-                sleep(10)
-                soup = BeautifulSoup(res, 'html.parser').select('#J_goodsList > ul')
-            # 定位搜索结果主体，并获取所有的商品的标签
-            good_list = soup[0].select('[class=gl-item]')
-            print("get good_list", len(good_list))
-            # 循环获取所有商品信息
-            for temp in good_list:
-                # sku
-                sku = temp.get('data-sku').strip()
-                good_info = [sku]
-                commit_start_url = f'https://item.jd.com/{sku}.html'
-                # 发送请求，得到结果
-                comment_res = self.sess.get(commit_start_url)
-                # 编码方式是GBK国标编码
-                # comment_res.encoding = 'gbk'
-                print(comment_res.text)
-                # comment_res_json = comment_res.json()
-
-                # 解析得到评论数量
-                # print(comment_res_json['CommentsCount'][0]['CommentCountStr'])
-                exit()
-
-
-                # 获取名称信息
-                name_div = temp.select_one('[class="p-name p-name-type-2"]')
-                name = name_div.text.strip()
-                if name.startswith("自营"):
-                    name = name[2:].strip()
-                    
-                good_info.append(name)
-                
-                # 商品链接
-                item_url = temp.select_one('[class=p-img]').select_one('a').get('href')
-                good_info.append("https:"+item_url)
-
-                # 价格信息
-                price_div = temp.select_one('[class=p-price]')
-                good_info.append(price_div.text.strip()[1:])
-
-                # 店铺信息
-                shop_div = temp.select_one('[class=p-shop]')
-                good_info.append(shop_div.get_text().strip())
-                good_info.append("https:"+shop_div.select_one('a').get('href'))
-                
-                
-                # 图片信息
-                img_div = temp.select_one('[class=p-img]').select_one('img')
-                img_url = "https:"+img_div.get('data-lazy-img')
-                good_info.append(img_url)
-
-                # 将商品信息写入到Excel
-                ws.append(good_info)
-
-        # 保存Excel文件
-        wb.save("good_info2.xlsx")
-    def get_price(self, sku=None):
-        sku = 100149996442
-        t = int(time() * 1000)
-        url = f"https://api.m.jd.com/?appid=pc-item-soa&functionId=pc_detailpage_wareBusiness&client=pc&clientVersion=1.0.0&t={t}&body=%7B%22skuId%22%3A{sku}%2C%22"
-        url2 = "https://api.m.jd.com/?appid=item-v3&functionId=pctradesoa_recommend&client=pc&clientVersion=1.0.0&t=1733407154469&body=%7B%22methods%22%3A%22accessories%22%2C%22p%22%3A103003%2C%22sku%22%3A100157830530%2C%22cat%22%3A%229987%2C653%2C655%22%2C%22lid%22%3A15%2C%22ck%22%3A%22pin%2CipLocation%2Catw%2Caview%22%2C%22lim%22%3A5%7D&h5st=20241205215914473%3Bhfhhfh55ez1ri4l8%3Bfb5df%3Btk03w19c6198818n3WPQ1813DV30h194DFp-kR9DBPZ3afZ3P_CQ9ZW1R4eEfWd3fqNDio1h5mz4cN93PaZjOr6mK23v%3B62c53cda2185dce0c0cc778823616bb9f93bdde2b1855d2f9298b36377fa1fea%3B4.9%3B1733407154473%3BpjbMhjpd9nIg7jpjxjZf2iFjLrJp-jpd-aYR5mINGWYeDSlRDSlRJrJdJrESJrpjh7pdLDIj9e1TJrpjh7Jjyf4fybldJeVe1ToeKalS2HodJSFf1fVe6PIS1rof7rIjLDIj7SnQEiVS0ipjLDrgJjIeFele2X4T6bYe1flf6PYfFiVS7r4T4H4fyblf5fYfJrJdJfUT1yVTIipjLDrgJTIgyzpe1uWS-GFSMWoRJrJdJTEjLrJp-jJOVWoWKemRyPFSnOHjLDIj_ulS9mFPJrpjh7Jj-WlO9G3TK2HjLDIjFqEjLrJp-3kjLDrfLDIjzXETJrpjLrJp-jJjLDIj0XETJrpjLrJp-roeLDIj1XETJrpjLrJp-rojxjZe2iFjLrpjLDrg7rJdJbYOJipjLrpjh7pdzrJdJfYOJipjLrpjh7Jf_rJdJjYOJipjLrpjh7JjyzZf9rIjLDIj6XETJrpjLrJp-rojxj5R0ipjLrpjh7ZeLDIj46FjLrpjLDrg7rJdJ7FjLrpjLDrg7rJdJb1OJrpjLrJpwqJdJbFQGakNGipjLDrguqpjhjpd0bldKGYfzbFfHWleMaFRJrJdJjoPJrpjLrJpwqJdJrkPJrpjh7Jj0vWe6vmf6rpVLf2YLfVTeqpQGaEQiq5dDe0Q3yVRImVYJrJdJnVO4ipjLD7N%3B10ecfb030f8ed17c8137e619da20f322af0529043f9b36326818a0c2984c828b&x-api-eid-token=jdd03GJYSIMOVXIATBNQOODKDRW2DUP4M6SDWMNMFN5K6RLNHJJULLACJORLTT3PRAH6X53EYTH5FAA4EJTV3NPRL25FRNEAAAAMTS4PBVHYAAAAAC45TEH2NLOQJTQX&loginType=3&uuid=181111935.17310522299991312897114.1731052229.1733393844.1733405264.19"
-        res = self.sess.get(url2)
-        res.encoding = 'utf-8'
-        print(res.text)
-# if __name__ == "__main__":
-#     # cookie，用于验证登录状态，必须要有cookie，否则京东会提示网络繁忙请重试
-#     # 获取方法：使用浏览器登录过后按F12，点击弹出界面中最上方的network选项，name栏里面随便点开一个，拉到最下面就有cookie，复制到cookie.txt中
-#     # 注意，不要换行，前后不要有空格，只需要复制cookie的值，不需要复制“cookie：”这几个字符
-#     # 上面的看不懂的话，看这个：https://blog.csdn.net/qq_46047971/article/details/121694916
-#     # 然后就可以运行程序了
-#     cookie_str = ''
-#     with open('/Users/lyhkd/ZJU/Fall2024/BS/Price-Comparison-System/crawler/cookie.txt') as f:
-#         cookie_str = f.readline()
     
-#     # 输入cookie，关键词，输入结束页数
-#     content_page = Content(cookie_str, '手机', 3)
-#     content_page.print()
+headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Connection": "keep-alive",
+        "Host": "www.amazon.com",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "device-memory": "8",
+        "sec-ch-device-memory": "8",
+        "dpr": "1",
+        "sec-ch-dpr": "1",
+        "viewport-width": "1287",
+        "sec-ch-viewport-width": "1287",
+        "rtt": "250",
+        "downlink": "10",
+        "ect": "4g",
+        "sec-ch-ua": '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-ch-ua-platform-version": '"15.0.0"',
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-User": "?1",
+        "Sec-Fetch-Dest": "document",
+        "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,fr;q=0.6",
+        "Cookie": cookie,   # 直接从你设置邮编后的亚马逊网页 F12 查看获取
+    }
+   
+    
+def get_item_info_dict(html):
+    item_list = []  # 用于存储所有商品的字典
+    # 定位搜索结果主体，并获取所有的商品的标签
+    soup = BeautifulSoup(html, 'html.parser')
+    try:
+        good_list = soup.select('div.s-main-slot div.s-result-item')
+    except:
+        print('Skip No items found')
+    # 循环获取所有商品信息
+    for temp in good_list:
+        item_info = {}  # 用于存储单个商品的字典
+        
+        # sku
+        asin = temp.get('data-asin')
+        if not asin:
+            continue
+        item_info['sku'] = asin
+        
+        # 获取名称信息
+        name_div = temp.select_one('div[data-cy="title-recipe"] span')
+        if name_div:
+            item_info['title'] = name_div.text.strip()
+        
+        # 商品链接
+        item_url = temp.select_one('a.a-link-normal')
+        if item_url:
+            item_info['link'] = "https://www.amazon.com" + item_url.get('href')
+        else:
+            continue
+        # 价格信息
+        price_whole = temp.select_one('span.a-price-whole')
+        price_fraction = temp.select_one('span.a-price-fraction')
+        if price_whole and price_fraction:
+            item_info['price'] = price_whole.text.replace(',','').strip() + price_fraction.text.strip()
+        else:
+            continue
+        
+        # 图片信息
+        img_div = temp.select_one('img.s-image')
+        if img_div:
+            item_info['img_url'] = img_div.get('src')
+        
+        item_info['shop'] = "Amazon"
+        item_info['shop_link'] = "https://www.amazon.com"
+        # 将商品信息字典加入列表
+        item_list.append(item_info)
+    # 返回商品字典列表
+    return item_list
+    
+def save_html(content):
+    # 确保目录存在
+    directory = "page"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+ 
+    # 生成文件名
+    filename = time.strftime("%Y%m%d%H%M%S") + ".html"
+    filepath = os.path.join(directory, filename)
+ 
+    # 保存文件
+    with open(filepath, 'w', encoding='utf-8') as file:
+        file.write(content)
+    print("页面已保存至:", filepath)
+ 
+async def monitor_amazon():
+    proxy = "http://127.0.0.1:7890"
+    # 监控的产品，搜索词
+    keyword = "iphone"
+    search_url = f"https://www.amazon.com/s?k={keyword.replace(' ', '+')}"
+ 
+    async with aiohttp.ClientSession() as session:
+        response = await session.get(search_url, headers=headers, proxy=proxy)
+        html = await response.text()
+        await session.close()
+        item_list = get_item_info_dict(html)
+        # save_html(html)
+        if "dogs of amazon" in html.lower():
+            print("搜索被标识为异常访问")
+        return item_list
+        # elif asin.lower() in html.lower():
+        #     print("在 Amazon 搜索结果页找到了关键词")
+        # else:
+        #     print("在 Amazon 搜索结果页未找到 ASIN 关键词，发送警告")
+def get_price(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    price_whole = soup.select_one('span.a-price-whole')
+    price_fraction = soup.select_one('span.a-price-fraction')
+    if price_whole and price_fraction:
+        return price_whole.text.replace(',','').strip() + price_fraction.text.strip()
+    else:
+        return None
+    
+def get_item_detail_info(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    item_info = {}
 
-#     content_page.get_item_info_xslx()
-#     # content_page.get_detail()
-#     # content_page.get_price()
+    # 获取商品标题
+    # title_div = soup.select_one('#productTitle')
+    # if title_div:
+    #     item_info['title'] = title_div.text.strip()
 
+    # 获取商品价格
+    # price_whole = soup.select_one('span.a-price-whole')
+    # price_fraction = soup.select_one('span.a-price-fraction')
+    # if price_whole and price_fraction:
+    #     item_info['price'] = price_whole.text.replace(',','').strip() + price_fraction.text.strip()
 
+    # 获取商品图片
+    img_div = soup.select_one('#imgTagWrapperId img')
+    if img_div:
+        item_info['img_list'] = img_div.get('src')
 
+    # 获取商品描述
+    description_div = soup.select_one('#productDescription')
+    if description_div:
+        item_info['简介'] = description_div.text.strip()
+
+    detail_info1 = soup.select_one('#productFactsDesktopExpander').select('li')
+    detail_info2 = soup.select_one('#detailBullets_feature_div').select('li')
+    for i in detail_info1 + detail_info2:
+        if ':' in i.text:
+            key, value = i.text.split(':', 1)  # 只分割一次，避免值中有 ":" 的情况
+        item_info[key.replace('\n', '').replace('\u200f', '').strip()] = value.replace('\n', '').replace('\u200e', '').strip()
+    
+    
+    # 获取商品评分
+    rating_div = soup.select_one('.reviewCountTextLinkedHistogram')
+    if rating_div:
+        item_info['评分'] = rating_div.select_one('[class="a-size-base a-color-base"]').text.strip()
+        
+
+    # 获取商品评论数
+    review_count_div = soup.select_one('#acrCustomerReviewText')
+    if review_count_div:
+        item_info['评论数'] = review_count_div.text.strip()
+
+    return item_info
+
+async def fetch_item_detail(session, url):
+    async with session.get(url, headers=headers) as response:
+        html = await response.text()
+        save_html(html)
+        return get_item_detail_info(html)
+    
+async def detail():
+    item_url = "https://www.amazon.com/zh/dp/B08BWWR15B"  # 替换为实际的商品详情页 URL
+    async with aiohttp.ClientSession() as session:
+        item_info = await fetch_item_detail(session, item_url)
+        return item_info
+# 在 Windows 中使用 SelectorEventLoop
+if __name__ == '__main__':
+    # if os.name == 'nt':
+    #     loop = asyncio.SelectorEventLoop()
+    #     asyncio.set_event_loop(loop)
+    # else:
+    #     loop = asyncio.get_event_loop()
+ 
+    # loop.run_until_complete(monitor_amazon())
+    # loop.close()
+    item_list = asyncio.run(monitor_amazon())
+
+    # with open('page/20241214160011.html','r') as f:
+    #     html=f.read()
+    # item_list = get_item_info_dict(html)
+    for item in item_list:
+        print(item)
+    
+    # item_info = asyncio.run(detail())
+    # with open('page/20241214202929.html','r') as f:
+    #     html=f.read()
+    # item_info = get_item_detail_info(item_info)
+    # print(item_info)

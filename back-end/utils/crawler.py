@@ -349,7 +349,7 @@ class AmazonCrawler(object):
                         print("代理仍然被标识为异常访问")
                         return []
                     
-            save_html(html)
+            # save_html(html)
             return self.get_item_info_dict(html)
             
     async def get_item_amazon(self):
@@ -418,7 +418,7 @@ class AmazonCrawler(object):
     def get_item_detail_info(self, html):
         soup = BeautifulSoup(html, 'html.parser')
         item_info = {}
-        save_html(html)
+        # save_html(html)
 
         # 获取商品图片
         img_div = soup.select_one('#imgTagWrapperId img')

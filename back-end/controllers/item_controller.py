@@ -11,9 +11,10 @@ from controllers.price_controller import get_price_history, add_item_price_histo
 import asyncio
 
 cookie = Cookie()
-JDcrawler = JDCrawler(cookie.JDcookie)
-AZcrawler = AmazonCrawler(cookie.Amazoncookie)
-GWcrawler = GWCrawler(cookie.GWcookie)
+
+JDcrawler = JDCrawler(cookie.JDcookie) if cookie.JDcookie is not None else None
+AZcrawler = AmazonCrawler(cookie.Amazoncookie) if cookie.Amazoncookie is not None else None
+GWcrawler = GWCrawler(cookie.GWcookie) if cookie.GWcookie is not None else None
 
 def get_random_items(page_size):
     items = db.session.query(Item).order_by(db.func.random()).limit(page_size).all()
@@ -206,10 +207,12 @@ def search_items_from_websites(keyword, page_begin=1, page_end=1, platform='all'
     try: # 爬虫抓取数据
         if platform in ['all', 'JD']:
             print('searching JD')
-            GWcrawler.update_search(keyword, 'JD', page_begin, page_end)
-            results = asyncio.run(GWcrawler.get_item_info_dict())
-            JDcrawler.update_search(keyword, page_begin, page_end)
-            results += JDcrawler.get_item_info_dict()
+            if GWcrawler is not None:
+                GWcrawler.update_search(keyword, 'JD', page_begin, page_end)
+                results = asyncio.run(GWcrawler.get_item_info_dict())
+            if JDcrawler is not None:
+                JDcrawler.update_search(keyword, page_begin, page_end)
+                results += JDcrawler.get_item_info_dict()
             from run import app
             with app.app_context():
                 for result in results:
@@ -227,8 +230,9 @@ def search_items_from_websites(keyword, page_begin=1, page_end=1, platform='all'
                         # 添加到数据库
         if platform in ['all', 'AMAZON']:
             print('searching AMAZON')
-            AZcrawler.update_search(keyword, page_begin, page_end)
-            results = asyncio.run(AZcrawler.get_item_amazon())
+            if AZcrawler is not None:
+                AZcrawler.update_search(keyword, page_begin, page_end)
+                results = asyncio.run(AZcrawler.get_item_amazon())
             from run import app
             with app.app_context():
                 for result in results:

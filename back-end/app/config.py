@@ -46,11 +46,19 @@ class Cookie:
         JD_cookie_file_path = os.path.join(project_root, 'data', 'JDcookie.txt')
         Amazon_cookie_file_path = os.path.join(project_root, 'data', 'Amazoncookie.txt')
         GW_cookie_file_path = os.path.join(project_root, 'data', 'GWcookie.txt')
-        
-        with open(JD_cookie_file_path, 'r') as f:
-            self.JDcookie = f.read()
-        with open(Amazon_cookie_file_path, 'r') as f:
-            self.Amazoncookie = f.read()
-        with open(GW_cookie_file_path, 'r') as f:
-            self.GWcookie = f.read()
+        if not os.path.exists(JD_cookie_file_path):
+            self.JDcookie = None
+        else:
+            with open(JD_cookie_file_path, 'r') as f:
+                self.JDcookie = f.read()
+        if not os.path.exists(Amazon_cookie_file_path):
+            self.Amazoncookie = None
+        else:
+            with open(Amazon_cookie_file_path, 'r') as f:
+                self.Amazoncookie = f.read()
+        if not os.path.exists(GW_cookie_file_path):
+            self.GWcookie = None
+        else:
+            with open(GW_cookie_file_path, 'r') as f:
+                self.GWcookie = f.read()
 

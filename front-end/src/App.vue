@@ -31,14 +31,10 @@ import { NConfigProvider, NDialogProvider, NNotificationProvider, NMessageProvid
 
 
 import useLoginStore from '@/store/login'
-import useCategoryStore from '@/store/category'
 import useSearchStore from '@/store/search'
-import useCartStore from '@/store/cart'
 
 const loginStore = useLoginStore()
-const categoryStore = useCategoryStore()
 const searchStore = useSearchStore()
-const cartStore = useCartStore()
 
 // loginStore.load()
 //searchStore.updatePageData()
