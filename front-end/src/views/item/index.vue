@@ -1,5 +1,6 @@
 <template>
   <div class="product-details">
+    <n-spin :show="loading">
     <n-card class="product-card">
       <n-row>
         <n-col span="24" class="bread-box">
@@ -109,6 +110,7 @@
 
 
     </n-card>
+  </n-spin>
   </div>
 </template>
 
@@ -126,6 +128,7 @@ const router = useRouter();
 const store = useItemStore();
 const loginStore = useLoginStore();
 const isMobile = ref(window.innerWidth <= 768);
+const loading = ref(true); // 加载状态
 const handleResize = () => {
   isMobile.value = window.innerWidth <= 768;
 };
@@ -147,6 +150,8 @@ onMounted(async () => {
       await store.fetchItem(itemId);
     } catch (err) {
       console.error('Failed to fetch item:', err);
+    } finally {
+      loading.value = false; // 数据加载完成后设置为 false
     }
   }
 });

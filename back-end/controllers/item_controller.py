@@ -1,4 +1,5 @@
 from models import db
+from celery import current_app as celery
 from models.item import Item
 from controllers.platform_controller import get_platform_id, get_platform_name
 from utils.crawler import JDCrawler, AmazonCrawler, GWCrawler
@@ -9,6 +10,7 @@ from sqlalchemy import text
 import re
 from controllers.price_controller import get_price_history, add_item_price_history
 import asyncio
+from time import sleep
 
 cookie = Cookie()
 
@@ -28,31 +30,32 @@ def get_random_items(page_size):
         "totalPages": 1,
         "items": serialized_items
     }
-    
-def update_item_price(item_id, price):
+
+@celery.task(name='update_description')
+def update_description(item_id):
     item = db.session.query(Item).filter_by(id=item_id).first()
     if item.platform_id == get_platform_id('JD'):
-        JDcrawler.update_search(item.search_title)
-        results = JDcrawler.get_item_info_dict()
+        description1 = JDcrawler.get_detail_string(item.sku)
+        description2, current_price = asyncio.run(GWcrawler.get_detail_string(item.sku, platform='JD'))
+        description = description1 + description2 if description1 is not None and description2 is not None else description1 if description1 is not None else description2
+        # print("get JD description", description1, description2,current_price)
+    elif item.platform_id == get_platform_id('AMAZON'):
+        description, current_price = asyncio.run(AZcrawler.get_detail_string(item.sku))
+        # print("get amazon description", item.description, current_price)
+    
+    if item.description is None or ':' not in item.description or item.description != description:
+        item.description = description
+    item.current_price = current_price if current_price is not None else item.current_price
     item.update_time = datetime.now(timezone.utc)
-    db.session.commit()
     add_item_price_history(item)
-
-
+    db.session.commit()
 # 获取商品详情
-def get_item_details(item_id):
+def get_item_details(item_id, fetchweb=True):
     item = db.session.query(Item).filter_by(id=item_id).first()
     if item is None:
         return None
-    if item.description is None or ':' not in item.description:
-        if item.platform_id == get_platform_id('JD'):
-            # item.description = JDcrawler.get_detail_string(item.sku)
-            item.description = asyncio.run(GWcrawler.get_detail_string(item.sku, platform='JD'))
-        elif item.platform_id == get_platform_id('AMAZON'):
-            item.description = asyncio.run(AZcrawler.get_detail_string(item.sku))
-            print("get amazon description", item.description)
-            
-        db.session.commit()
+    if fetchweb:
+        update_description.delay(item_id)
     results = {
         'title': item.title,
         'link': item.link,
@@ -129,7 +132,7 @@ def fulltextsearch(keyword, page_number, page_size, max_size=None, platform='all
     elif order == 'price_desc':
         order_clause = "ORDER BY current_price DESC"
     else:
-        order_clause = ""
+        order_clause = "ORDER BY RAND()"
         
     if max_size is None:
         if platform != 'all':
@@ -198,10 +201,10 @@ def search_items_indb_pagination(keyword, page_number, page_size,max_size=None, 
 
 is_searching = False
 def search_items_from_websites(keyword, page_begin=1, page_end=1, platform='all'):
-    global is_searching
-    if is_searching:
-        return
-    is_searching = True
+    # global is_searching
+    # if is_searching:
+    #     return
+    # is_searching = True
     print('Searching items for keyword:', keyword)
     results = []
     try: # 爬虫抓取数据
@@ -284,7 +287,7 @@ def update_item_price_from_websites(item_id):
     except Exception as e: # 爬虫出错，从数据库中查找
         print('Amazon crawler Error:', e, ' Searching items from database')
     if item.platform_id == get_platform_id('JD'):
-        price = get_item_details(item_id)['current_price']
+        price = get_item_details(item_id, fetchweb=False)['current_price']
     elif item.platform_id == get_platform_id('AMAZON'):
         price = asyncio.run(AZcrawler.get_item_price(item.sku))
         try:

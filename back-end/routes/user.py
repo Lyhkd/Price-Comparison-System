@@ -18,7 +18,7 @@ def Signup():
 
     # 检查用户名和邮箱是否存在
     if not username or not password or not email:
-        return jsonify({"code":1, "message": "用户名、密码和邮箱不能为空", "data":""}), 400
+        return jsonify({"code":1, "message": "用户名、密码和邮箱不能为空", "data":""}), 200
 
     if is_user_exist(username):
         return jsonify({"code":1, "message": "用户名已存在", "data":""}), 200
@@ -30,7 +30,7 @@ def Signup():
     try:
         add_user(data)
     except Exception as e:
-        return jsonify({"code":1, "message": "注册失败 "+ str(e), "data":""}), 400
+        return jsonify({"code":1, "message": "注册失败 "+ str(e), "data":""}), 200
     
     return jsonify({"code":0, "message": "注册成功", "data":""}), 201
 
@@ -101,9 +101,9 @@ def updateLoginInfo(username):
             }}), 200
         except Exception as e:
             db.session.rollback()
-            return jsonify({'code': 1, 'message': f'Failed to update user info: {str(e)}', 'data': {}}), 500
+            return jsonify({'code': 1, 'message': f'Failed to update user info: {str(e)}', 'data': {}}), 200
 
-    return jsonify({'code': 1, 'message': 'User not found', 'data': {}}), 404
+    return jsonify({'code': 1, 'message': 'User not found', 'data': {}}), 200
 
 @api.route('/user/auth/loginInfo', methods=['GET'])
 @token_required
@@ -111,7 +111,7 @@ def getLoginInfo(username):
     info = get_login_info(username)
     if info:
         return jsonify({'code': 0, 'message': 'Success', 'data': info}), 200
-    return jsonify({'code': 1, 'message': 'User not found', 'data': {}}), 404
+    return jsonify({'code': 1, 'message': 'User not found', 'data': {}}), 200
 
 # 用户注销
 @api.route('/user/logout', methods=['GET'])

@@ -3,34 +3,41 @@ version: '3.9'
 services:
   flask:
     build:
-      context: ./back-end  # Flask 项目目录
+      context: ./back-end
+    image: zhouyueer/price-comparison-system-flask:latest
     container_name: flask_app
     ports:
       - "5001:5000"
     depends_on:
       - redis
+      - mysql
+    restart: always
     environment:
-      - FLASK_ENV=development
-      - DATABASE_URL=mysql+pymysql://user:password@mysql_db/pricecomp
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      FLASK_ENV: development
+      DATABASE_URL: mysql+pymysql://user:password@mysql_db/pricecomp
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
 
   vue:
     build:
-      context: ./front-end  # Vue3 项目目录
+      context: ./front-end
+    image: zhouyueer/price-comparison-system-vue:latest
     container_name: vue_app
     depends_on:
-        - flask
-  
+      - flask
+    restart: always
+
   nginx:
     build:
-      context: ./front-end  # Nginx 配置文件目录
+      context: ./front-end
+    image: zhouyueer/price-comparison-system-nginx:latest
     container_name: nginx
     ports:
       - "80:80"
     depends_on:
       - vue
       - flask
+    restart: always
 
   mysql:
     image: mysql:8.0
@@ -45,7 +52,7 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./sql:/docker-entrypoint-initdb.d  # 挂载 SQL 文件目录
+      - ./sql:/docker-entrypoint-initdb.d
 
   redis:
     image: redis:latest
@@ -56,21 +63,25 @@ services:
 
   celery:
     build:
-      context: ./back-end  # Flask 项目目录
+      context: ./back-end
+    image: zhouyueer/price-comparison-system-celery:latest
     container_name: celery_worker
-    command: celery -A run.celery worker --loglevel=info  # 启动 Celery worker
+    command: celery -A run.celery worker --loglevel=info
     depends_on:
       - flask
       - redis
+    restart: always
 
   celery-beat:
     build:
-      context: ./back-end  # Flask 项目目录
+      context: ./back-end
+    image: zhouyueer/price-comparison-system-celery-beat:latest
     container_name: celery_beat
-    command: celery -A run.celery beat --loglevel=info  # 启动 Celery beat
+    command: celery -A run.celery beat --loglevel=info
     depends_on:
       - flask
       - redis
+    restart: always
 
 volumes:
   mysql_data:

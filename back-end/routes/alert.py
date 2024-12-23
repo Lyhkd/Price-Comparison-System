@@ -10,10 +10,12 @@ from flask_mail import Message, Mail
 @api.route('/alert', methods=['POST'])
 def add_alert():
     data = request.get_json()
+    if data.get('targetPrice') is None or data.get('notificationMethod') is None:
+        return jsonify({"code":1, "message": "参数缺失", "data":""}), 200
     if add_price_alert(data):
         return jsonify({"code":0, "message": "添加成功", "data":""}), 201
     else:
-        return jsonify({"code":1, "message": "添加失败，已存在相同的提醒", "data":""}), 400
+        return jsonify({"code":1, "message": "添加失败，已存在相同的提醒", "data":""}), 200
     
     
 @api.route('/alert/<uid>', methods=['GET'])
@@ -21,7 +23,7 @@ def query_alerts(uid):
     alerts = query_alert(user_id=uid)
     data = []
     for alert in alerts:
-        details = get_item_details(alert.item_id)
+        details = get_item_details(alert.item_id, fetchweb=False)
         histories = get_alert_history(alert.id)
         price_hist = get_price_history(alert.item_id)
         data.append({
@@ -52,7 +54,7 @@ def update_alert(alertid):
         db.session.commit()
         return jsonify({"code":0, "message": "修改成功", "data":""}), 200
     else:
-        return jsonify({"code":1, "message": "修改失败，提醒不存在", "data":""}), 400
+        return jsonify({"code":1, "message": "修改失败，提醒不存在", "data":""}), 200
     
     
 @api.route('/alert/history/<alertid>', methods=['GET'])
@@ -73,7 +75,7 @@ def query_alert_history(alertid):
 def delete_alert(alert_id):
     alert = query_alert(alert_id=alert_id)
     if not alert:
-        return jsonify({"code": 1, "message": "Alert not found"}), 404
+        return jsonify({"code": 1, "message": "未找到相关提醒"}), 200
     db.session.delete(alert)
     db.session.commit()
     return jsonify({"code": 0, "message": "Alert deleted successfully", "data":''}), 200

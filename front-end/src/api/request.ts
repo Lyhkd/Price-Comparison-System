@@ -18,7 +18,7 @@ const request = axios.create({
 
 //请求拦截器
 request.interceptors.request.use((config) => {
-  window.$message.info("get request");
+  // window.$message.info("get request");
   // Add the userTempID to headers if it exists
   // if (config.headers) {
   //   config.headers.userTempID = 'aa973966-c323-42a1-9ae1-0f0dba690fa5';

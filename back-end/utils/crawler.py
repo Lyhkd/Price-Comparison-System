@@ -37,12 +37,13 @@ class JDCrawler(object):
             res = self.sess.get(url)
             res.encoding = 'utf-8'
             res = res.text
+            # print(res)
             # 定位搜索结果主体，并获取所有的商品的标签
             soup = BeautifulSoup(res, 'html.parser').select('#J_goodsList > ul')
             try:
                 good_list = soup[0].select('[class=gl-item]')
-            except:
-                print('Skip No items found')
+            except Exception as e:
+                print('Skip No items found', e)
                 continue
             # 循环获取所有商品信息
             for temp in good_list:
@@ -216,6 +217,12 @@ class GWCrawler(object):
         soup = BeautifulSoup(html, 'html.parser')
         item_info = {}
         # 获取商品图片
+        price_div = soup.select_one('#current-price')
+        try:
+            price = price_div.text.strip()[1:]
+            item_info['price'] = float(price)
+        except:
+            print(price_div, "price not found")
         info_div = soup.select_one('[class=product-info-table]')
         if info_div:
             infos = info_div.select('[class=info-item]')
@@ -232,7 +239,7 @@ class GWCrawler(object):
         else:
             return None
         item_url = f'https://www.gwdang.com/crc64/dp{sku}-{platform_str}'
-        print("in get detail string", item_url)
+        # print("in get detail string", item_url)
         await self.create_session()
         async with self.session.get(item_url) as response:
             raw_html = await response.read()  # 直接读取响应的字节内容
@@ -243,10 +250,14 @@ class GWCrawler(object):
             # save_html(html)
             item_info = self.get_item_detail_info(html)
             item_info_str = ''
+            price = None
             for key, value in item_info.items():
-                item_info_str += key + ':' + value + '\n'
+                if key != 'price':
+                    item_info_str += key + ':' + str(value) + '\n'
+                else:
+                    price = value
             await self.close_session()
-            return item_info_str
+            return item_info_str, price
     
     async def get_item_info_dict(self):
         item_list = []  # 用于存储所有商品的字典
@@ -420,6 +431,12 @@ class AmazonCrawler(object):
         item_info = {}
         # save_html(html)
 
+        price_whole = soup.select_one('span.a-price-whole')
+        price_fraction = soup.select_one('span.a-price-fraction')
+        if price_whole and price_fraction:
+            price = price_whole.text.replace(',','').strip() + price_fraction.text.strip()
+            item_info['price'] = price
+            
         # 获取商品图片
         img_div = soup.select_one('#imgTagWrapperId img')
         if img_div:
@@ -460,13 +477,8 @@ class AmazonCrawler(object):
         review_count_div = soup.select_one('#acrCustomerReviewText')
         if review_count_div:
             item_info['评论数'] = review_count_div.text.strip()
-
-        # 转换成字符串
-        item_info_str = ''
-        for key, value in item_info.items():
-            item_info_str += key + ':' + value + '\n'
         
-        return item_info_str
+        return item_info
 
     async def fetch_item_detail(self,session, url):
         async with session.get(url, headers=self.headers) as response:
@@ -477,10 +489,27 @@ class AmazonCrawler(object):
         item_url = f"https://www.amazon.com/zh/dp/{sku}"  # 替换为实际的商品详情页 URL
         print("in get detail string", item_url)
         async with aiohttp.ClientSession() as session:
-            item_info_str = await self.fetch_item_detail(session, item_url)
+            item_info = await self.fetch_item_detail(session, item_url)
             await session.close()
-            return item_info_str
-        
+            # 转换成字符串
+            item_info_str = ''
+            price = None
+            for key, value in item_info.items():
+                if key != 'price':
+                    item_info_str += key + ':' + value + '\n'
+                else:
+                    price = value
+            return item_info_str, price
+    
+    def get_price(self, html):
+        soup = BeautifulSoup(html, 'html.parser')
+        price_whole = soup.select_one('span.a-price-whole')
+        price_fraction = soup.select_one('span.a-price-fraction')
+        if price_whole and price_fraction:
+            return price_whole.text.replace(',','').strip() + price_fraction.text.strip()
+        else:
+            return None
+    
     async def get_item_price(self, sku=None):
         item_url = f"https://www.amazon.com/zh/dp/{sku}"
         async  with aiohttp.ClientSession() as session:

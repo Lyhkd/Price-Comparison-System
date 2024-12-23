@@ -113,6 +113,12 @@ class Content(AbstractWebPage):
         item_info = {}
         # save_html(html)
         # 获取商品图片
+        price_div = soup.select_one('#current-price')
+        try:
+            price = price_div.text.strip()[1:]
+            item_info['price'] = float(price)
+        except:
+            save_html(html)
         info_div = soup.select_one('[class=product-info-table]')
         if info_div:
             infos = info_div.select('[class=info-item]')
@@ -137,10 +143,10 @@ class Content(AbstractWebPage):
             html = await response.text(encoding='utf-8', errors='ignore')  # 指定编码并忽略错误
             save_html(html)
             item_info = self.get_item_detail_info(html)
-            item_info_str = ''
-            for key, value in item_info.items():
-                item_info_str += key + ':' + value + '\n'
-            return item_info_str
+            # item_info_str = ''
+            # for key, value in item_info.items():
+            #     item_info_str += key + ':' + value + '\n'
+            return item_info
 
 async def main():
     cookie_str = ''
@@ -148,11 +154,11 @@ async def main():
         cookie_str = f.readline()
 
     content_page = Content(cookie_str, 'iphone', 1)
-    content_page.print()
-    await content_page.get_item_info_xslx()
-    # string = await  content_page.get_detail_string('100067903671', 'JD')
+    # content_page.print()
+    # await content_page.get_item_info_xslx()
+    string = await  content_page.get_detail_string('100067903671', 'JD')
     await content_page.close_session()
-    # print(string)
+    print(string)
 
 
 if __name__ == '__main__':

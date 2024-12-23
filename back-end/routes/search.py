@@ -16,9 +16,9 @@ def search_items():
         platform = request.args.get('platform')
         order = request.args.get('order')
     except:
-        return jsonify({"message": "Invalid params"}), 400
+        return jsonify({"message": "参数错误"}), 200
     if not pageNo or not pageSize:
-        return jsonify({"code":1, "message": "Keyword is required", "data": []}), 400
+        return jsonify({"code":1, "message": "Keyword is required", "data": []}), 200
     if not keyword:
         items = get_random_items(pageSize)
         return jsonify({"code":0, "message": "Success", "data": items}), 200
@@ -44,7 +44,8 @@ def search_items():
     thread.start()
     
     if len(items['items']) == 0:
-        return jsonify({"code":1, "message": "No products found", "data": []}), 404
+        items = get_random_items(pageSize)
+        return jsonify({"code":0, "message": "Success", "data": items}), 200
     
     print("return items", len(items['items']))
     # 返回前端需要的商品信息
@@ -59,18 +60,21 @@ def item_details(id):
     print("receive request for item details")
     try:
         item_id = int(id)
-    except:
-        return jsonify({"code": 1, "message": "Invalid params", data:[]}), 400
+    except ValueError:
+        return jsonify({"code": 1, "message": "Invalid params", "data": []}), 200
     
     item = get_item_details(item_id)
     if item is None:
-        return jsonify({"message": "Item not found"}), 404
-    attrs = parse_description(item['description'])
-    if 'img_list' not in attrs:
-        attrs['img_list'] = None
-    img_list = attrs['img_list'].split(';') if attrs['img_list'] is not None else []
-    img_list = ["https:" + img for img in img_list]
-    attrs.pop('img_list')
+        return jsonify({"message": "Item not found"}), 200
+    
+    description = item.get('description')
+    if description is None:
+        description = ''
+    attrs = parse_description(description)
+    
+    img_list = attrs.pop('img_list', None)
+    img_list = ["https:" + img for img in img_list.split(';')] if img_list else []
+    
     data = {
         "id": id,
         "title": item['title'],
@@ -103,6 +107,6 @@ def item_price_history(id):
     try:
         item_id = int(id)
     except:
-        return jsonify({"code": 1, "message": "Invalid params", "data":[]}), 400
+        return jsonify({"code": 1, "message": "Invalid params", "data":[]}), 200
     price_history = get_price_history(item_id)
     return jsonify({"code": 0, "message": "Success", "data": price_history}), 200

@@ -4,10 +4,12 @@ from models.price_alert import db, PriceAlert  # 假设你有 AlertList 模型
 from flask_mail import Message, Mail
 from flask import current_app
 from app import Config
-from controllers.user_controller import get_user_email, user_check, get_user_phone
-from controllers.item_controller import get_item_details, update_item_price_from_websites
+from controllers.user_controller import get_user_email, get_user_phone
+from controllers.item_controller import get_item_details, update_item_price_from_websites, add_item_price_history
 from controllers.alert_controller import add_alert_history, query_alert
-from twilio.rest import Client  # 导入 Twilio 客户端
+from models.item import Item
+from controllers.platform_controller import get_platform_id
+from datetime import datetime, timezone
 import urllib
 import urllib.request
 import asyncio
@@ -45,7 +47,7 @@ def check_price():
 def email_notify(user_id, item_id, price):
     title = "[My Price Notification] 您收藏的商品价格下降啦！"
     email = get_user_email(user_id)
-    product = get_item_details(item_id)
+    product = get_item_details(item_id, fetchweb=False)
     alert = query_alert(user_id=user_id, item_id=item_id)
     content =  f"您收藏的商品 {product['title']} 价格已经降到 {price} 元！您预期的价格曾经是 {alert.target_price} 元。\n 点击链接查看详情：{product['link']}"
     print(f"Sending notification to {email} for product {item_id} at price {price}, title: {product['title']}, content: {content}")
@@ -91,7 +93,7 @@ def email_notify(user_id, item_id, price):
 #     return True
 
 def sms_notify(user_id, item_id, price):
-    product = get_item_details(item_id)
+    product = get_item_details(item_id, fetchweb=False)
     alert = query_alert(user_id=user_id, item_id=item_id)
     if len(product['title']) > 15:
         product['title'] = product['title'][:15] + '...'
@@ -116,4 +118,5 @@ def sms_notify(user_id, item_id, price):
     # })
     print(f"User {user_id} notified for product {item_id} at price {price}.")
     return True
+
 
