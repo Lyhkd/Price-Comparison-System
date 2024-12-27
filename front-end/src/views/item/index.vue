@@ -148,6 +148,14 @@ onMounted(async () => {
     try {
       console.log("fetching item", itemId);
       await store.fetchItem(itemId);
+      console.log("attrs", store.itemDetail.attrs)
+      if (!(store.itemDetail.attrs && store.itemDetail.attrs.length > 0)) {
+        setTimeout(async () => {
+        console.log("fetching item decription again after 3 seconds", itemId);
+        await store.updateDescription(itemId);
+      }, 5000);
+      }
+      
     } catch (err) {
       console.error('Failed to fetch item:', err);
     } finally {

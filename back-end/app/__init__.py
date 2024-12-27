@@ -8,7 +8,8 @@ from sqlalchemy import text
 from celery import Celery
 from app import celeryconfig
 from flask_mail import Mail
-
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 
 def register_celery(celery, app):
@@ -27,6 +28,7 @@ def create_app(celery=None,db_init=False,register_celery_blueprint=False):
     mail = Mail()
     mail.init_app(app)
     CORS(app)
+    
     if celery:
         register_celery(celery=celery, app=app)  # >> 注册celery
     if register_celery_blueprint:

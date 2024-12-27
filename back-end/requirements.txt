@@ -30,6 +30,7 @@ Flask-Mail==0.10.0
 flask-msearch==0.2.9.4
 Flask-SQLAlchemy==3.1.1
 Flask-WhooshAlchemy==0.56
+Flask-Limiter==3.9.2
 frozenlist==1.5.0
 greenlet==3.1.1
 h11==0.14.0

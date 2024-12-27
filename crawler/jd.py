@@ -69,9 +69,9 @@ class Content(AbstractWebPage):
                         # 处理相对链接的情况
                         if img_url.startswith("//"):
                             img_url = "https:" + img_url
-                        good_info.append(img_url)
+                        good_info += img_url
                     else:
-                        good_info.append("无图片链接")
+                        good_info += "无图片链接"
             f.close()
     def get_detail(self, sku=None):
         sku = 100149996442

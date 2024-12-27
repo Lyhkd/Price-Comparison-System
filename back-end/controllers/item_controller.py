@@ -213,9 +213,11 @@ def search_items_from_websites(keyword, page_begin=1, page_end=1, platform='all'
             if GWcrawler is not None:
                 GWcrawler.update_search(keyword, 'JD', page_begin, page_end)
                 results = asyncio.run(GWcrawler.get_item_info_dict())
+                print("get gw items", len(results))
             if JDcrawler is not None:
                 JDcrawler.update_search(keyword, page_begin, page_end)
                 results += JDcrawler.get_item_info_dict()
+                print("get JD items", len(results))
             from run import app
             with app.app_context():
                 for result in results:

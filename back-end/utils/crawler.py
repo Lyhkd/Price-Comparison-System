@@ -41,9 +41,9 @@ class JDCrawler(object):
             # 定位搜索结果主体，并获取所有的商品的标签
             soup = BeautifulSoup(res, 'html.parser').select('#J_goodsList > ul')
             try:
-                good_list = soup[0].select('[class=gl-item]')
+                good_list = soup[0].select('[class=gl-i-wrap]')
             except Exception as e:
-                print('Skip No items found', e)
+                print('In JDCrawler Skip No items found', e)
                 continue
             # 循环获取所有商品信息
             for temp in good_list:
@@ -263,7 +263,7 @@ class GWCrawler(object):
         item_list = []  # 用于存储所有商品的字典
         await self.create_session()
         results = await self.fetch_all()
-        print("get item_list", len(results))
+        # print("get item_list", len(results))
         # print(results)
         await self.close_session()
         for res in results:
@@ -381,7 +381,7 @@ class AmazonCrawler(object):
         try:
             good_list = soup.select('div.s-main-slot div.s-result-item')
         except:
-            print('Skip No items found')
+            print('In Amazaon Crawler Skip No items found')
         # 循环获取所有商品信息
         for temp in good_list:
             item_info = {}  # 用于存储单个商品的字典

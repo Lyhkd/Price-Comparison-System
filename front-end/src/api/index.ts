@@ -14,6 +14,7 @@ export const reqSearchData = (params: SearchParams) => http.get<SearchPageData>(
 //detail
 //export const reqItemData = (id: number) => request({ url: `/item/${ id }`, method: 'get' })
 export const reqItemData = (id: number) => http.get(`/item/${ id }`)
+export const reqUpdateDescription = (id: number) => http.get(`/item/offline/${ id }`)
 export const reqPriceHistory = (id: number) => http.get(`/item/price/${ id }`)
 
 //price-alert

@@ -3,11 +3,18 @@ from flask import jsonify, request
 from controllers import search_items_indb_pagination, search_items_from_websites, get_random_items
 from threading import Thread, Lock
 import random
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask import current_app
 
+limiter = Limiter(
+    get_remote_address,
+    app=current_app,
+    default_limits=["200 per day", "50 per hour"]
+)
 # 标志变量和锁
-is_searching = False
-lock = Lock()
 @api.route('/search', methods=['GET'])
+@limiter.limit("10/minute")  # 每分钟最多10次请求
 def search_items():
     try:
         keyword = request.args.get('keyword')
@@ -63,7 +70,7 @@ def item_details(id):
     except ValueError:
         return jsonify({"code": 1, "message": "Invalid params", "data": []}), 200
     
-    item = get_item_details(item_id)
+    item = get_item_details(item_id, fetchweb=True)
     if item is None:
         return jsonify({"message": "Item not found"}), 200
     
@@ -88,7 +95,41 @@ def item_details(id):
         "imgList": img_list
     }
     return jsonify({"code": 0, "message": "Success", "data": data}), 200
+
+@api.route('/item/offline/<id>', methods=['GET'])
+def item_update(id):
+    print("receive request for item details")
+    try:
+        item_id = int(id)
+    except ValueError:
+        return jsonify({"code": 1, "message": "Invalid params", "data": []}), 200
     
+    item = get_item_details(item_id, fetchweb=False)
+    if item is None:
+        return jsonify({"message": "Item not found"}), 200
+    
+    description = item.get('description')
+    if description is None:
+        description = ''
+    attrs = parse_description(description)
+    
+    img_list = attrs.pop('img_list', None)
+    img_list = ["https:" + img for img in img_list.split(';')] if img_list else []
+    
+    data = {
+        "id": id,
+        "title": item['title'],
+        "link": item['link'],
+        "imageUrl": item['image_url'],
+        "currentPrice": item['current_price'],
+        "shop": item['shop'],
+        "shopLink": item['shop_link'],
+        "platform": item['platform'],
+        "attrs": attrs,
+        "imgList": img_list
+    }
+    return jsonify({"code": 0, "message": "Success", "data": data}), 200
+  
 def parse_description(description):
     # 将字符串按空格分割成键值对
     pairs = description.split('\n')

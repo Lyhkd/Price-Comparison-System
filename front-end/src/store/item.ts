@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { reqItemData, reqPriceHistory, postPriceAlert } from '@/api';
+import { reqItemData, reqPriceHistory, postPriceAlert, reqUpdateDescription } from '@/api';
 interface Item {
     id: number;
     title: string;
@@ -65,11 +65,14 @@ export const useItemStore = defineStore('item', {
         async fetchItem(itemId: number) {
                 this.itemData = (await reqItemData(itemId)) as Item
                 this.priceHistory = (await reqPriceHistory(itemId)) as priceHistory[]
-                console.log(this.priceHistory)
         },   
         async addAlert(data: AddAlert) {
             await postPriceAlert(data)
             console.log('add alert', data)
-        }  
+        },
+        async updateDescription(itemId: number){
+            this.itemData = (await reqUpdateDescription(itemId)) as Item
+            this.priceHistory = (await reqPriceHistory(itemId)) as priceHistory[]
+        }
     },
 });
